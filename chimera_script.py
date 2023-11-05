@@ -6,13 +6,15 @@ import pandas as pd
 import numpy as np
 
 
-pdb_file = 'test.pdb'
+pdb_file = '/Users/Tommy/Desktop/thesis/tommy-thesis/R1-15-closed/R1-0-start-membrane-3JYC.pdb'
 
 n = ['type','atomid','name','res','resid','x','y','z','b','t']
 x = pd.read_csv(pdb_file,delim_whitespace=True,header=4,names = n)
 
 
 fn = pdb_file[:-4] + '_surface.cxc'
+
+
 with open(fn,'w') as f:
     print('select ~:CHOL & ~:POPC','color sel plum','surface sel',sep='\n',file=f)
     print('select :CHOL','color sel orange',sep='\n',file=f)

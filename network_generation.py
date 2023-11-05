@@ -2,18 +2,12 @@
 Functions for making networks from MD data.
 '''
 
+from network_statistics import *
+import dynetx as dn
 
-import MDAnalysis as mda
-from MDAnalysis.tests.datafiles import PSF, DCD, GRO, XTC
-from MDAnalysis.analysis import contacts, distances
-import numpy as np
-from matplotlib import pyplot as plt
-import networkx as nx
-import itertools
-import warnings
+
 # suppress some MDAnalysis warnings about PSF files
 warnings.filterwarnings('ignore')
-
 
 def network_1_frame(u):
     '''protein contact network from 1 frame.'''
@@ -45,6 +39,61 @@ def network_1_frame(u):
 
     # plt.show()
 
+def contact_network_residues(u,res):
+    '''
+    static contact network including only select residue(s) and its neighbors (and edges between neighbors.)
+    res: list of residue id's to focus on
+    '''
+    contact_threshold = 6
+    chol = u.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
+    protein = u.select_atoms('not resname CHOL and not resname POPC').residues
+
+    protein_sterols = protein + chol
+
+    r = protein_sterols.atoms.center_of_mass(compound='residues')
+    contact_mat = distances.contact_matrix(r, cutoff=contact_threshold)
+
+    # take only selected residues and the residues they contact 
+    z = contact_mat[res,:].any(0)
+    adjacency = contact_mat[z][:,z]
+
+    resids = [i for i in range(len(z)) if z[i] ]
+
+    labels = {i:j for i,j in enumerate(resids)}
+    G = nx.from_numpy_array(adjacency)
+    nx.relabel_nodes(G, labels, copy=False)
+
+
+
+    return G
+
+def network_1_cholesterol(u,sterol_id):
+    '''make a contact network centered on specified cholesterol'''
+    contact_threshold = 6
+    chol = u.select_atoms(f'resid {sterol_id}').residues
+    protein = u.select_atoms('not resname CHOL and not resname POPC').residues
+
+    protein_sterols = protein + chol
+
+    r = protein_sterols.atoms.center_of_mass(compound='residues')
+    contact_mat = distances.contact_matrix(r, cutoff=contact_threshold)
+
+    # take only selected residues  
+    z = contact_mat[len(protein),:]
+    adjacency = contact_mat[z][:,z]
+
+    resids = [i for i in range(len(z)) if z[i] ]
+
+    labels = {i:j for i,j in enumerate(resids)}
+    labels[len(labels)-1] = sterol_id
+    
+    G = nx.from_numpy_array(adjacency)
+    nx.relabel_nodes(G, labels, copy=False)
+
+    return G
+
+
+
 def contact_percentage_network(u, threshold = 0.9):
     '''protein contact graph preserving only contacts present above a certain percentage of all frames'''
 
@@ -69,34 +118,6 @@ def contact_percentage_network(u, threshold = 0.9):
 
     return G
 
-def find_binding_sterols(u):
-    '''
-    Find cholesterols with binding events. 
-    Barbera 2018: "for each cholesterol interaction, 
-    the number of unique residue contacts at each time step during the interaction was counted. 
-    Binding events were defined as those interactions in which the total number 
-    of unique residue contacts over the duration of the cholesterol interaction 
-    exceeded a threshold of 25,000."
-    '''
-
-    pass
-
- # each network should be an event. this should return a list of networks.
- # find stretches of contact with protein and then 
-def chol_net(u,sterol_id):
-    sel_sterol = f'resname CHOL and resid {sterol_id} and not (name RC1 or name RC2)'
-    sel_protein = 'not resname CHOL and not resname POPC'
-
-    # why do i need a reference group.
-    ca = contacts.Contacts(u,
-                       select=(sel_sterol, sel_protein),
-                       refgroup=(acidic, basic),
-                       method=fraction_contacts_between,
-                       radius=5.0,
-                       kwargs={'radius': 5.0,
-                               'min_radius': 2.4}).run()
-    
-    pass
 
 
 def cholesterol_network(u, sterol_id):
@@ -115,7 +136,7 @@ def cholesterol_network(u, sterol_id):
     res_mat = np.zeros((len(u.trajectory),n_res))
 
     for ts in u.trajectory:
-        time = u.trajectory.time
+        t = u.trajectory.time
 
         # excluding cholesterol tails from center of mass calculations
         sterol = (u.select_atoms(f'resname CHOL and resid {sterol_id} and not (name RC1 or name RC2)')
