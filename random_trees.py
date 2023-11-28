@@ -113,6 +113,8 @@ def main():
     molpcts = ['15','30']
 
     universes = [uone,utwo]
+    print(uone)
+    print(utwo)
 
     pairwise = pd.DataFrame()
     hypergraphs = pd.DataFrame()

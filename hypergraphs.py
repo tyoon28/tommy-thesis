@@ -1,4 +1,5 @@
-import graph_tool.all as gt
+from graph_tool.all import *
+import graph_tool as gt
 import sys
 import MDAnalysis as mda
 from MDAnalysis.tests.datafiles import PSF, DCD, GRO, XTC
