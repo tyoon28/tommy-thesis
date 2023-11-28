@@ -110,8 +110,6 @@ class uhhgraphs(AnalysisBase):
 
 
 def main():
-    uone = mda.Universe('R1-15-closed/R1-0-start-membrane-3JYC.pdb','R1-15-closed/R1-0-1000-3JYC.xtc')
-    utwo = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb','R1-30-closed/R1-0-1000-3JYC.xtc')
     molpcts = ['15','30']
 
     universes = [uone,utwo]
@@ -145,7 +143,9 @@ def main():
     clf = clf.fit(X_train,y_train)
     #Predict the response for test dataset
     y_pred = clf.predict(X_test)
-    print("Accuracy, pairwise:",metrics.accuracy_score(y_test, y_pred))
+
+    with open('out.txt','w') as f:
+        print("Accuracy, pairwise:",metrics.accuracy_score(y_test, y_pred),file=f)
 
     # again for hypergraph
 
@@ -158,10 +158,18 @@ def main():
     clf2 = clf2.fit(X_train2,y_train2)
     #Predict the response for test dataset
     y_pred2 = clf2.predict(X_test2)
-    print("Accuracy, hypergraph:",metrics.accuracy_score(y_test2, y_pred2))
+
+
+    with open('out.txt','w') as f:
+        print("Accuracy, hypergraph:",metrics.accuracy_score(y_test2, y_pred2))
+
 
     tree.plot_tree(clf2,feature_names=X2.columns,filled=True,class_names=['15','30'])
+    plt.savefig('hypergraph_tree.png')
+
     tree.plot_tree(clf,feature_names=X.columns,filled=True,class_names=['15','30'])
+    plt.savefig('pairwise_tree.pdf')
+
 
 
 
@@ -174,3 +182,19 @@ def main():
 
         
         
+if __name__ == "__main__":
+    xtcs = []
+    for file in os.listdir('R1-15-closed'):
+        if file.endswith('.xtc'):
+            xtcs.append('R1-15-closed/'+file)
+    xtcs.sort(key=lambda x: int(x.split('-')[1]))
+    uone = mda.Universe('R1-15-closed/R1-0-start-membrane-3JYC.pdb',*xtcs)
+
+    xtcs = []
+    for file in os.listdir('R1-30-closed'):
+        if file.endswith('.xtc'):
+            xtcs.append('R1-30-closed/'+file)
+    xtcs.sort(key=lambda x: int(x.split('-')[1]))
+    utwo = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb',*xtcs)
+
+    main()
