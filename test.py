@@ -51,7 +51,7 @@ def testspeed():
 
 
 rog = Cholesterol_contact(u)
-rog.run(start=0,stop=20000,verbose=True)
+rog.run(start=0,verbose=True)
 
 rog._prepare()
 rog._single_frame()
@@ -62,12 +62,10 @@ for i in rog.results:
         print(i,rog.results[i]['longest_contact'])
 
 def anybinding(r):
+    n = []
     for i in r:
-        if r[i]['mostcontacts']:
-            print(r[i]['mostcontacts'])
-        if r[i]['binding_events']:
-            print(i)
-
+        n.append(max(r[i]['residuecontacts']))
+    print(max(n))
 
 
 r = u.select_atoms('not resname CHOL and not resname POPC').residues
@@ -83,3 +81,8 @@ a = np.array([[0,0,0,0,0,0,0,0,0],
               [0,0,2,3,4,5,6,0,0],
               [0,1,4,5,6,7,8,0,0],
               [0,1,4,5,6,7,8,0,0]])
+
+
+
+
+# plot distribution of # frames of contact vs # sterols

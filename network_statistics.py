@@ -13,6 +13,11 @@ import itertools
 import warnings
 import time
 import tqdm
+import os
+from scipy import stats
+import seaborn as sns
+
+
 
 # TODO: to find binding events I think will have to use a separate function?
 class Cholesterol_contact(AnalysisBase):
@@ -22,10 +27,9 @@ class Cholesterol_contact(AnalysisBase):
             contacts - list of frames that contact the channel
             contact_time - total contact time
             longest_contact - duration (frames) of longest contact with channel
-            binding_events - ranges of continuous interaction that have more than 25000 unique residue contacts
-                (interpreted as a contact with a residue in a given frame, but unsure) (this is wrong, maybe just make it into 
-                ranges of continuous interaction)
-            mostcontacts - most residues that were touched in one contact
+            binding_events - ranges of continuous interaction
+            mostcontacts - most residues that were touched in one interaction
+            residuecontacts - # residue contacts in each interaction
             need to add start of longest contact.
             
     '''
@@ -50,7 +54,7 @@ class Cholesterol_contact(AnalysisBase):
         self.currentinteractions = {i:[] for i in self.sterols.resids}
 
         for i in self.sterols.resids:
-            self.results[i] = {'contacts':[],'binding_events':[],'mostcontacts':0}
+            self.results[i] = {'contacts':[],'binding_events':[],'mostcontacts':0,'residuecontacts':[]}
 
 
 
@@ -85,9 +89,11 @@ class Cholesterol_contact(AnalysisBase):
 
             else:
                 # end of interaction. store binding event and reset counters
-                startint = self.currentinteractions[resid][0]
-                endint = self.currentinteractions[resid][-1]
-                self.results[resid]['binding_events'].append((startint,endint))
+                if self.currentinteractions[resid]:
+                    startint = self.currentinteractions[resid][0]
+                    endint = self.currentinteractions[resid][-1]
+                    self.results[resid]['binding_events'].append((startint,endint))
+                    self.results[resid]['residuecontacts'].append(self.sterol_residuecontacts[resid])
                 
                 
                 if self.sterol_residuecontacts[resid] > self.results[resid]['mostcontacts']:
@@ -100,11 +106,13 @@ class Cholesterol_contact(AnalysisBase):
 
         for sterol in self.sterols:
             resid = sterol.resid
-            if self.sterol_residuecontacts[resid] > 25000:
+            if self.currentinteractions[resid]:
+
                 startint = self.currentinteractions[resid][0]
                 endint = self.currentinteractions[resid][-1]
                 self.results[resid]['binding_events'].append((startint,endint))
-
+                self.results[resid]['residuecontacts'].append(self.sterol_residuecontacts[resid])
+                
             if self.sterol_residuecontacts[resid] > self.results[resid]['mostcontacts']:
                     self.results[resid]['mostcontacts'] = self.sterol_residuecontacts[resid]
 
@@ -209,3 +217,92 @@ def binding_sites(site,include_subunits = True):
     else: x = l
     return x
 # make function to find contact duration (percent contact) and maximal occupancy (longest contact)
+
+
+def cholesterol_occupancy(u,sites):
+    '''
+    return the number of cholesterols in contact with binding sites.
+    could do this with the rog object...........
+    '''
+
+    contact_threshold = 6
+    selectstring = 'resid ' +  ' or resid '.join(map(str,sites))
+    l = len(sites)
+    s = u.select_atoms(selectstring).residues
+    chol = u.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
+
+    protein_sterols = s + chol
+
+    r = protein_sterols.atoms.center_of_mass(compound='residues')
+    contact_mat = distances.contact_matrix(r, cutoff=contact_threshold)
+
+    # take only rows representing sites
+    z = contact_mat[:len(sites),len(sites):]
+    occupancy = np.sum(np.any(z,0))
+
+    return occupancy
+
+def cholesterol_occupancy2(rog):
+    # for given timepoint return number of cholesterols bound. 
+    # have to put a bound (touching binding site) result in the analysisbase object for this to work.
+    pass
+
+
+def mutual_exclusivity(u):
+    '''
+    Finds correlation between contact edges (residue-residue contacts only) over timeseries.
+    '''
+    contact_threshold = 6
+    sterols = u.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
+    protein = u.select_atoms('not resname CHOL and not resname POPC').residues
+    lenp = len(protein)
+
+    #each row is a timestep. each column is an edge.
+    numedges = int(((lenp**2)-lenp)/2)
+    results = np.zeros((len(u.trajectory),numedges))
+
+    for ts in tqdm.tqdm(u.trajectory):
+        t = u.trajectory.frame
+        res = protein.atoms.center_of_mass(compound='residues')
+        contact_mat = distances.contact_matrix(res, cutoff= contact_threshold)
+        #flatten contact matrix
+        ind = np.triu_indices(lenp,k=1)
+        flattened = contact_mat[ind]
+
+        # mapping from residue pairs to edges:
+        # edge between resiudes i, j is edge number int((n*(n-1)/2) - (n-i)*((n-i)-1)/2 + j - i - 1)
+        # where n is length of protein.
+
+        results[t] = flattened
+
+    # get edge names, so we can label.
+    edges = []
+    for i in range(len(flattened)):
+        edges.append((ind[0][i],ind[1][i]))
+        
+
+    # delete zero columns (edges that never exist)
+    idx = np.argwhere(np.all(results[..., :] == 0, axis=0))
+    results2 = np.delete(results, idx, axis=1)
+    e = np.delete(edges,idx,axis=0)
+
+    # get spearman correlation matrix and associated p values
+    cormat, pvals = stats.spearmanr(results2)
+
+    # get p values of all negative correlations
+    l = pvals * (cormat<0)
+    signeg = np.sum(cormat<0)
+
+
+    # 57 and 63 are mutually exclusive?
+    sub = cormat[57:100,57:100]
+    ax = sns.heatmap(sub, linewidth=0)
+    plt.xlabel('edge #')
+    plt.ylabel('edge #')
+    plt.title('correlation between edges')
+    plt.show()
+
+
+
+    
+    return results

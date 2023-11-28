@@ -1,14 +1,18 @@
 '''
 vizualizing networks
 '''
+
+# random forest to predict open/closed or cholesterol percent based on which edges exist in protein?
+# compare with same model but with hyperedges?
+
+
 from pyvis.network import Network
 from network_generation import *
 
 def viz_graph(G):
-    # output an image file of a graph. use this to make animation of dynamic graph?
     color_map = []
     for node in G.nodes:
-        if node in Ia: color_map.append('green')
+        if node in binding_sites('all'): color_map.append('green')
         elif node > 1348: color_map.append('orange')
         else: color_map.append('yellow')
 
@@ -70,6 +74,50 @@ def cholesterol_network_series(u,sterol_id,rog):
         plt.savefig(f"{sterol_id}/{ts.frame}.png", format="PNG")
 
 
+def graph_cholesterol_occupancy(u,sites,rog):
+    '''
+    graph the number of cholesterols in contact with binding sites over time
+    '''
+
+    y = []
+    x = []
+    for ts in u.trajectory[:10000]:
+        y.append(cholesterol_occupancy(u,sites))
+        x.append(u.trajectory.frame)
+    
+    plt.scatter(x, y)
+    plt.show()
+
+    counts, bins = np.histogram(y)
+    plt.stairs(counts, bins)
+
+
+    pass
+
+def graph_cholesterol_contact(rog):
+    '''
+    graph the number of cholesterols in contact with binding sites over time
+    '''
+
+    y = []
+    x = []
+    for ch in rog.results:
+        y.append(len(rog.results[ch]['contacts']))
+
+    for i in y:
+        if i  > 10000:
+            x.append(i)
+    counts, bins = np.histogram(x)
+    plt.stairs(counts, bins)
+    counts, bins = np.histogram(y)
+    plt.stairs(counts, bins)
+
+    plt.xlabel("total # frames in contact with channel")
+    plt.ylabel("# cholesterols")
+
+
+
+    pass
 
 
 def longest(a):
@@ -94,3 +142,67 @@ def longest(a):
 
         last = i
     print(best)
+
+def residue_network_series(u,r_ids,highlight=[]):
+    '''
+    make a series of contact networks of given residues - networks only include those residues.
+    highlight selected residues in highlight (not implemented)
+    '''
+    allsites = binding_sites('all')
+    if not os.path.isdir(str(r_ids[0])):
+        os.makedirs(str(r_ids[0]))
+
+
+    # TODO: set trajectory range
+    for ts in u.trajectory:
+        plt.clf()
+        G = network_selected(u,r_ids)
+        color_map = []
+        for node in G.nodes:
+            if node in allsites: color_map.append('green')
+            elif node > 1348: color_map.append('orange')
+            else: color_map.append('yellow')
+
+        G.remove_edges_from(nx.selfloop_edges(G))
+
+        if len(G.edges) == 0: continue
+
+        center_node = r_ids[0]  # Or any other node to be in the center
+        edge_nodes = set(G) - {center_node}
+        # Ensures the nodes around the circle are evenly distributed
+        if len(G.nodes) == 2:
+            pos = {}
+            pos[center_node] = np.array([0, 0])  
+            pos[list(edge_nodes)[0]] = np.array([0, 0.5]) 
+        else:
+            pos = nx.circular_layout(G.subgraph(edge_nodes))
+            pos[center_node] = np.array([0, 0])  # manually specify node position
+        plt.title(f'frame: {ts.frame}')
+
+            
+        nx.draw(G, pos = pos, node_color=color_map, font_weight='bold',with_labels=True)
+        plt.xlim([-2, 2])
+        plt.ylim([-2, 2])
+
+
+        plt.savefig(f"{r_ids[0]}/{ts.frame}.png", format="PNG")
+
+def sterol_contact_hist(rog):
+    '''
+    y axis: num sterols
+    x axis: num contacts
+    '''
+    y = []
+    for ch in rog.results:
+        if len(rog.results[ch]['contacts']) > 10000 and len(rog.results[ch]['contacts']) <15000:
+            y.append(len(rog.results[ch]['contacts']))
+
+    counts, bins = np.histogram(y)
+    plt.stairs(counts, bins)
+
+    plt.ylabel("total # frames in contact with channel")
+    plt.xlabel("# cholesterols")
+    plt.show()
+
+    return
+

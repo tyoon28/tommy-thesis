@@ -63,8 +63,6 @@ def contact_network_residues(u,res):
     G = nx.from_numpy_array(adjacency)
     nx.relabel_nodes(G, labels, copy=False)
 
-
-
     return G
 
 def network_1_cholesterol(u,sterol_id):
@@ -167,3 +165,26 @@ def cholesterol_network(u, sterol_id):
     # can iterate over all positions here since we only do this 100s-1000s of times.
 
     pass
+
+
+def network_selected(u,residues):
+    '''make a contact network including only the selected residues'''
+    contact_threshold = 6
+    residues.sort()
+    selstring = 'resid ' + ' or resid '.join(map(str,residues))
+    protein = u.select_atoms(selstring).residues
+
+    r = protein.atoms.center_of_mass(compound='residues')
+    contact_mat = distances.contact_matrix(r, cutoff=contact_threshold)
+
+    
+
+    labels = {i:j for i,j in enumerate(residues)}
+    
+    G = nx.from_numpy_array(contact_mat)
+    nx.relabel_nodes(G, labels, copy=False)
+
+    return G
+
+def hypergraph_1_frame(u):
+    '''hypergraph inferred using '''
