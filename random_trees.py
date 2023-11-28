@@ -168,7 +168,7 @@ def main():
     plt.savefig('hypergraph_tree.png')
 
     tree.plot_tree(clf,feature_names=X.columns,filled=True,class_names=['15','30'])
-    plt.savefig('pairwise_tree.pdf')
+    plt.savefig('pairwise_tree.png')
 
 
 
