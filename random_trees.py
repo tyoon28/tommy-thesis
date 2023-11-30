@@ -6,6 +6,8 @@ from sklearn.model_selection import train_test_split # Import train_test_split f
 from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
 from sklearn import tree
 
+
+
 class uhhgraphs(AnalysisBase):
     '''
     atomgroup: selection of cholesterol(s) and protein or all atoms
@@ -196,6 +198,8 @@ def main():
         
         
 if __name__ == "__main__":
+    warnings.filterwarnings('ignore')
+
     xtcs = []
     for file in os.listdir('R1-15-closed'):
         if file.endswith('.xtc'):
