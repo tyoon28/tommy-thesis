@@ -49,6 +49,7 @@ class uhhgraphs(AnalysisBase):
 
     def _single_frame(self):
         # Called after the trajectory is moved onto each new frame.
+        # it might be best to store this all in a dictionary instead of dataframe, then convert it at the end. BUt I don't care
         res = self.protein.atoms.center_of_mass(compound='residues')
         contact_mat = distances.contact_matrix(res, cutoff=self.contact_threshold)
         HG = self._hypergraph_1_frame(contact_mat)
@@ -121,7 +122,7 @@ def main():
     ind = 0
     for u in universes:
         graphs = uhhgraphs(u)
-        graphs.run(start=0,stop=500,verbose=True)
+        graphs.run(start=0,verbose=True)
         graphs.results['pairwise']['molpct'] = molpcts[ind]
         graphs.results['hypergraph']['molpct'] = molpcts[ind]
 
@@ -166,10 +167,10 @@ def main():
         print("Accuracy, hypergraph:",metrics.accuracy_score(y_test2, y_pred2))
 
 
-    tree.plot_tree(clf2,feature_names=X2.columns,filled=True,class_names=['15','30'])
+    tree.plot_tree(clf2,feature_names=list(X2.columns),filled=True,class_names=['15','30'])
     plt.savefig('hypergraph_tree.png')
 
-    tree.plot_tree(clf,feature_names=X.columns,filled=True,class_names=['15','30'])
+    tree.plot_tree(clf,feature_names=list(X.columns),filled=True,class_names=['15','30'])
     plt.savefig('pairwise_tree.png')
 
 
