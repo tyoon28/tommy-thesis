@@ -45,33 +45,43 @@ class uhhgraphs(AnalysisBase):
 
         self.pairwise = pd.DataFrame()
         self.hypergraph = pd.DataFrame()
+        self.hypergraph_dict = {}
+        self.pairwise_dict = {}
+        
         
 
     def _single_frame(self):
         # Called after the trajectory is moved onto each new frame.
-        # it might be best to store this all in a dictionary instead of dataframe, then convert it at the end. BUt I don't care
+
         res = self.protein.atoms.center_of_mass(compound='residues')
         contact_mat = distances.contact_matrix(res, cutoff=self.contact_threshold)
         HG = self._hypergraph_1_frame(contact_mat)
         G = np.transpose(np.triu(contact_mat).nonzero())
-        
+        f = self.ag.universe.trajectory.frame
 
-        edges = {}
-        for i in G:
-            name = '_'.join(map(str, i))
+        self.pairwise_dict[f] = [set(i) for i in G]
 
-            edges[name] = 1
-        self.pairwise = pd.concat([self.pairwise,pd.DataFrame([edges])]).fillna(0)
-
-        hypergraph_edges = {}
+        self.hypergraph_dict[f] = []
         for k in HG:
             for edge in HG[k]:
-                name = '_'.join(map(str,edge))
-                hypergraph_edges[name] = 1
-        self.hypergraph = pd.concat([self.hypergraph,pd.DataFrame([hypergraph_edges])]).fillna(0)
+                self.hypergraph_dict[f].append(set(edge))
+
+        
 
 
     def _conclude(self):
+        #remove self loops
+        pdp = pd.DataFrame.from_dict(self.pairwise_dict, orient='index')
+        pdh = pd.DataFrame.from_dict(self.hypergraph_dict, orient='index')
+
+        p = pd.get_dummies(pdp.map(repr), prefix='', prefix_sep='')
+        h = pd.get_dummies(pdh.map(repr), prefix='', prefix_sep='')
+
+        self.pairwise = p.T.groupby(p.columns).max().T
+        self.hypergraph = h.T.groupby(h.columns).max().T
+
+        self.pairwise = self.pairwise.filter(regex=',',axis=1)
+        self.hypergraph = self.hypergraph.filter(regex=',',axis=1)
 
         self.results['hypergraph'] = self.hypergraph
         self.results['pairwise'] = self.pairwise
@@ -122,12 +132,12 @@ def main():
     ind = 0
     for u in universes:
         graphs = uhhgraphs(u)
-        graphs.run(start=0,verbose=True)
+        graphs.run(start=0,stop=3,verbose=True)
         graphs.results['pairwise']['molpct'] = molpcts[ind]
         graphs.results['hypergraph']['molpct'] = molpcts[ind]
 
-        pairwise = pd.concat([pairwise,graphs.results['pairwise']]).fillna(0)
-        hypergraphs = pd.concat([hypergraphs,graphs.results['hypergraph']]).fillna(0)
+        pairwise = graphs.results['pairwise']
+        hypergraphs = graphs.results['hypergraph']
 
         ind += 1
 
