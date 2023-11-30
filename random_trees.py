@@ -134,7 +134,7 @@ def main():
     ind = 0
     for u in universes:
         graphs = uhhgraphs(u)
-        graphs.run(start=0,stop=3,verbose=True)
+        graphs.run(start=0,verbose=True)
         graphs.results['pairwise']['molpct'] = molpcts[ind]
         graphs.results['hypergraph']['molpct'] = molpcts[ind]
 
