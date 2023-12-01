@@ -133,7 +133,7 @@ def main():
     hypergraphs = pd.DataFrame()
     for ind,u in enumerate(universes):
         graphs = uhhgraphs(u)
-        graphs.run(start=0,stop=2,verbose=True)
+        graphs.run(start=0,verbose=True)
         
         graphs.results['pairwise']['molpct'] = molpcts[ind]
         graphs.results['hypergraph']['molpct'] = molpcts[ind]
@@ -165,7 +165,7 @@ def main():
     #Predict the response for test dataset
     y_pred = clf.predict(X_test)
 
-    print("Accuracy, pairwise:",metrics.accuracy_score(y_test, y_pred),file=f)
+    print("Accuracy, pairwise:",metrics.accuracy_score(y_test, y_pred))
 
     tree.plot_tree(clf,feature_names=list(X.columns),filled=True,class_names=['15','30'])
     plt.savefig('pairwise_tree.png')
@@ -184,7 +184,7 @@ def main():
 
     #Predict the response for test dataset
     y_pred2 = clf2.predict(X_test2)
-    print("Accuracy, hypergraph:",metrics.accuracy_score(y_test2, y_pred2),file=f)
+    print("Accuracy, hypergraph:",metrics.accuracy_score(y_test2, y_pred2))
 
 
     tree.plot_tree(clf2,feature_names=list(X2.columns),filled=True,class_names=['15','30'])
