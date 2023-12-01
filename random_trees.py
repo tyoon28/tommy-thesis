@@ -131,36 +131,45 @@ def main():
 
     pairwise = pd.DataFrame()
     hypergraphs = pd.DataFrame()
-    ind = 0
-    for u in universes:
+    for ind,u in enumerate(universes):
         graphs = uhhgraphs(u)
-        graphs.run(start=0,verbose=True)
+        graphs.run(start=0,stop=2,verbose=True)
+        
         graphs.results['pairwise']['molpct'] = molpcts[ind]
         graphs.results['hypergraph']['molpct'] = molpcts[ind]
 
-        pairwise = graphs.results['pairwise']
-        hypergraphs = graphs.results['hypergraph']
+        pairwise = pd.concat([pairwise,graphs.results['pairwise']]).fillna(False)
+        hypergraphs = pd.concat([hypergraphs,graphs.results['hypergraph']]).fillna(False)
 
-        ind += 1
+        print()
+        print(f'finished analysis of universe {ind}')
+        print()
 
-    
+
+    print('finished analysis, starting trees')
     # making decision tree for pairwise
     X = pairwise.drop('molpct',axis=1) # Features
     y = pairwise.molpct # Target variable
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1) # 70% training and 30% test
 
+    print('made training and test sets')
     # Create Decision Tree classifer object
     # TODO: only pre-pruned for now
     # TODO: for training, sample randomly from simulation
+    
     clf = DecisionTreeClassifier(criterion="entropy", max_depth=10)
     # Train Decision Tree Classifer
     clf = clf.fit(X_train,y_train)
+    print('trained classifier')
     #Predict the response for test dataset
     y_pred = clf.predict(X_test)
 
-    with open('out.txt','w') as f:
-        print("Accuracy, pairwise:",metrics.accuracy_score(y_test, y_pred),file=f)
+    print("Accuracy, pairwise:",metrics.accuracy_score(y_test, y_pred),file=f)
+
+    tree.plot_tree(clf,feature_names=list(X.columns),filled=True,class_names=['15','30'])
+    plt.savefig('pairwise_tree.png')
+    print(f'saved pairwise tree in {os.getcwd()}')
 
     # again for hypergraph
 
@@ -171,19 +180,17 @@ def main():
     clf2 = DecisionTreeClassifier(criterion="entropy", max_depth=10)
     # Train Decision Tree Classifer
     clf2 = clf2.fit(X_train2,y_train2)
+    print('trained hypergraph classifier')
+
     #Predict the response for test dataset
     y_pred2 = clf2.predict(X_test2)
-
-
-    with open('out.txt','w') as f:
-        print("Accuracy, hypergraph:",metrics.accuracy_score(y_test2, y_pred2))
+    print("Accuracy, hypergraph:",metrics.accuracy_score(y_test2, y_pred2),file=f)
 
 
     tree.plot_tree(clf2,feature_names=list(X2.columns),filled=True,class_names=['15','30'])
     plt.savefig('hypergraph_tree.png')
-
-    tree.plot_tree(clf,feature_names=list(X.columns),filled=True,class_names=['15','30'])
-    plt.savefig('pairwise_tree.png')
+    print(f'saved hypergraph tree in {os.getcwd()}')
+    
 
 
 
