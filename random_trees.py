@@ -133,7 +133,8 @@ def main():
     hypergraphs = pd.DataFrame()
     for ind,u in enumerate(universes):
         graphs = uhhgraphs(u)
-        graphs.run(start=0,verbose=True)
+        graphs.run(start=0,stop=20000,verbose=True)
+        print('finished running universe {ind}')
         
         graphs.results['pairwise']['molpct'] = molpcts[ind]
         graphs.results['hypergraph']['molpct'] = molpcts[ind]
