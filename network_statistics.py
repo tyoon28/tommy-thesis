@@ -267,6 +267,7 @@ def mutual_exclusivity(u):
     '''
     Finds correlation between contact edges (residue-residue contacts only) over timeseries.
     '''
+    print('doing mutual exclusivity')
     contact_threshold = 6
     sterols = u.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
     protein = u.select_atoms('not resname CHOL and not resname POPC').residues
@@ -275,6 +276,7 @@ def mutual_exclusivity(u):
     #each row is a timestep. each column is an edge.
     numedges = int(((lenp**2)-lenp)/2)
     results = np.zeros((len(u.trajectory),numedges))
+    print('setup done')
 
     for ts in tqdm.tqdm(u.trajectory):
         t = u.trajectory.frame
@@ -289,21 +291,25 @@ def mutual_exclusivity(u):
         # where n is length of protein.
 
         results[t] = flattened
+        if t % 1000 == 0:
+            print(f'done with frame {t}')
 
+    
     # get edge names, so we can label.
     edges = []
     for i in range(len(flattened)):
         edges.append((ind[0][i],ind[1][i]))
-        
+    print('labeled edges')
 
     # delete zero columns (edges that never exist)
     idx = np.argwhere(np.all(results[..., :] == 0, axis=0))
     results2 = np.delete(results, idx, axis=1)
     e = np.delete(edges,idx,axis=0)
 
+    print('starting cormat')
     # get spearman correlation matrix and associated p values
     cormat, pvals = stats.spearmanr(results2)
-
+    print('done with cormat')
 
     # get p values of all negative correlations
     neg = (cormat<0)
@@ -315,6 +321,7 @@ def mutual_exclusivity(u):
         print('signeg:',signeg,file=f)
         print('sigpos:',signeg,file=f)
         print('shape of cormat:', cormat.shape, file=f)
+    print('done')
     return
 
     # 57 and 63 are mutually exclusive?
