@@ -277,38 +277,46 @@ def mutual_exclusivity(u):
     numedges = int(((lenp**2)-lenp)/2)
     results = np.zeros((len(u.trajectory),numedges))
     print('setup done')
+    edges = []
+
+    # first find edges that exist for >40% of the time
+    for ts in tqdm.tqdm(u.trajectory):
+        frame = u.trajectory.frame
+        r = res.atoms.center_of_mass(compound='residues')
+        mat = distances.contact_matrix(r, cutoff=6)
+        np.fill_diagonal(mat, 0)
+        edgesmat += mat
+
+    t = len(u.trajectory) * 0.4
+    mask = (edgesmat >= t)
+    mask_ind = np.transpose(mask.nonzero())
+
+    # only look at those edges & store them.
+
+    edges = {f'{m[0]}-{m[1]}':[] for m in mask_ind}
 
     for ts in tqdm.tqdm(u.trajectory):
         t = u.trajectory.frame
         res = protein.atoms.center_of_mass(compound='residues')
         contact_mat = distances.contact_matrix(res, cutoff= contact_threshold)
-        #flatten contact matrix
-        ind = np.triu_indices(lenp,k=1)
-        flattened = contact_mat[ind]
 
-        # mapping from residue pairs to edges:
-        # edge between resiudes i, j is edge number int((n*(n-1)/2) - (n-i)*((n-i)-1)/2 + j - i - 1)
-        # where n is length of protein.
-
-        results[t] = flattened
+        for i in mask_ind:
+            if contact_mat[i[0]][i[1]]:
+                mask_ind[f'{i[0]}-{i[1]}'].append(True)
+            else:
+                mask_ind[f'{i[0]}-{i[1]}'].append(False)
         if t % 1000 == 0:
             print(f'done with frame {t}')
 
     
-    # get edge names, so we can label.
-    edges = []
-    for i in range(len(flattened)):
-        edges.append((ind[0][i],ind[1][i]))
-    print('labeled edges')
+    # split dict
+    enames = list(edges.keys())
+    evals = list(edges.values())
 
-    # delete zero columns (edges that never exist)
-    idx = np.argwhere(np.all(results[..., :] == 0, axis=0))
-    results2 = np.delete(results, idx, axis=1)
-    e = np.delete(edges,idx,axis=0)
 
     print('starting cormat')
     # get spearman correlation matrix and associated p values
-    cormat, pvals = stats.spearmanr(results2)
+    cormat, pvals = stats.spearmanr(edges,axis=1)
     print('done with cormat')
 
     # get p values of all negative correlations
