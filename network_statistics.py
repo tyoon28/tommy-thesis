@@ -304,10 +304,18 @@ def mutual_exclusivity(u):
     # get spearman correlation matrix and associated p values
     cormat, pvals = stats.spearmanr(results2)
 
-    # get p values of all negative correlations
-    l = pvals * (cormat<0)
-    signeg = np.sum(cormat<0)
 
+    # get p values of all negative correlations
+    neg = (cormat<0)
+    pos = (cormat>0)
+    signeg = np.count_nonzero((pvals<0.05) * neg)/2
+    sigpos = np.count_nonzero((pvals<0.05) * pos)/2
+
+    with open('o.txt','w') as f:
+        print('signeg:',signeg,file=f)
+        print('sigpos:',signeg,file=f)
+        print('shape of cormat:', cormat.shape, file=f)
+    return
 
     # 57 and 63 are mutually exclusive?
     sub = cormat[57:100,57:100]
