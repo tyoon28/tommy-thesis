@@ -74,18 +74,16 @@ def cholesterol_network_series(u,sterol_id,rog):
         plt.savefig(f"{sterol_id}/{ts.frame}.png", format="PNG")
 
 
-def graph_cholesterol_occupancy(u,sites,rog):
+def graph_cholesterol_occupancy(rog):
     '''
     graph the number of cholesterols in contact with binding sites over time
     '''
 
-    y = []
-    x = []
-    for ts in u.trajectory[:10000]:
-        y.append(cholesterol_occupancy(u,sites))
-        x.append(u.trajectory.frame)
-    
-    plt.scatter(x, y)
+    y = np.zeros(100020)
+    for ch in rog.results:
+        for i in rog.results[ch]['contacts']:
+            y[i]+=1
+    plt.plot(y,linewidth=0.1)
     plt.show()
 
     counts, bins = np.histogram(y)
@@ -115,6 +113,15 @@ def graph_cholesterol_contact(rog):
     plt.xlabel("total # frames in contact with channel")
     plt.ylabel("# cholesterols")
 
+    x = []
+    for ch in rog.results:
+        x.append(rog.results[ch]['longest_contact'])
+    counts, bins = np.histogram(x)
+    plt.stairs(counts, bins)
+    plt.xlabel("longest contact")
+    plt.ylabel("# cholesterols")
+
+    plt.show()
 
 
     pass

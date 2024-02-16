@@ -9,7 +9,7 @@ for file in os.listdir('R1-15-closed'):
 xtcs.sort(key=lambda x: int(x.split('-')[1]))
 
 
-u = mda.Universe('R1-15-closed/R1-0-start-membrane-3JYC.pdb','R1-15-closed/R1-0-1000-3JYC.xtc')
+u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb','R1-30-closed/R1-0-1000-3JYC.xtc')
 u = mda.Universe('R1-15-closed/R1-0-start-membrane-3JYC.pdb',*xtcs)
 
 
@@ -56,6 +56,7 @@ rog.run(start=0,verbose=True)
 rog._prepare()
 rog._single_frame()
 
+u.trajectory[1].time
 
 for i in rog.results:
     if rog.results[i]['longest_contact'] > 30:
@@ -86,3 +87,13 @@ a = np.array([[0,0,0,0,0,0,0,0,0],
 
 
 # plot distribution of # frames of contact vs # sterols
+
+
+
+degree_sequence = sorted((d for n, d in G.degree()), reverse=True)
+dmax = max(degree_sequence)
+plt.bar(*np.unique(degree_sequence, return_counts=True))
+plt.title("Degree histogram")
+plt.xlabel("Degree")
+plt.ylabel("# of Nodes")
+plt.show()

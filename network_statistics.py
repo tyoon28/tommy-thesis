@@ -16,6 +16,8 @@ import tqdm
 import os
 from scipy import stats
 import seaborn as sns
+import random
+import statistics
 
 
 
@@ -145,6 +147,21 @@ class Cholesterol_contact(AnalysisBase):
 
         return longest
 
+    def get_contactframes(self,n=1,**kwargs):
+        # return frames where protein contacts n cholesterols.
+        cframes = {}
+        for i in self.results:
+            for frame in self.results[i]['contacts']:
+                if frame not in cframes:
+                    cframes[frame] = 1
+                else:
+                    cframes[frame] += 1
+        l = sorted([x for x in cframes if cframes[x] >= n])
+        return l
+
+
+
+
 
 def unique_residue_contacts(u,sterol_ids):
     #find number of unique residue contacts over each binding event (continuous frame stretch) for each sterol in sterol_ids.
@@ -189,14 +206,8 @@ def chol_contact_duration(u,sterol_id):
 
     return longest_contact
 
-    
 
-def chol_contact_site(u,sterol_id):
-    '''duration (or which frames) of cholesterol's contact with given site'''
-
-    pass
-
-def binding_sites(site,include_subunits = True):
+def binding_sites(site,include_subunits = True,**kwargs):
     '''return lists of resids of binding sites'''
     if site == 'Ia':
         l =  [47, 51, 131, 134, 135]
@@ -210,6 +221,10 @@ def binding_sites(site,include_subunits = True):
         l = [34, 35, 38, 46, 49, 53, 136, 139, 140]
     if site == 'all':
         l = [34, 35, 38, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 127, 128, 131, 132, 134, 135, 136, 139, 140, 144]
+    if site == 'open':
+        l = [128, 131, 132, 134, 135, 136, 139, 47, 48, 51, 52, 53, 55, 56, 57, 127]
+    elif site == 'closed':
+        l = [128, 131, 134, 136, 139, 140, 144, 34, 35, 38, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 127]
     
     if not l: return
     if include_subunits:
@@ -302,7 +317,176 @@ def mutual_exclusivity(u):
     plt.title('correlation between edges')
     plt.show()
 
+    return results
 
+
+def check_inter_vs_duration(file):
+    # get average inter-event time and event duration of all edges given a temporal network file
+    active_events = []
+    durations = {}
+    sum_event_time = 0
+    last_t = 0
+    all_edges = []
+    all_events = {}
+    with open(file,'r') as f:
+        for line in f:
+            l = line.split()
+            t = l[-1]
+            u = l[1]
+            v = l[0]
+            if t not in all_events:
+                all_events[t] = []
+            all_events[t].append((v,u))
+            all_edges.append((v,u))
+        
+        edges = random.sample(all_edges, 1000)
+
+        duration = 0
+        active = False
+        durations = []
+        inters = []
+        for i in edges:
+            inter = 0
+            for t in all_events:
+                if i in all_events[t]:
+                    if active:
+                        duration += 1
+                    else:
+                        active = True
+                        duration = 1
+                else:
+                    if active:
+                        durations.append(duration)
+                        duration = 0
+                        active = False
+                    else:
+                        inter += 1
+            if active:
+                durations.append(duration)
+                duration = 0
+                active = False
+            inters.append(inter)
+    pass
+
+def sterol_occupancy(u,window,num,threshold):    
+    '''
+    returns average number of sterols bound for some threshold time over a window
+    window: length of window
+    num: number of windows to sample
+    threshold: threshold.
+    '''
+    sites = binding_sites('closed')
+    starts = random.sample(list(range(len(u.trajectory)-1-window)), num)
+
+    contact_threshold = 6
+    selectstring = 'resid ' +  ' or resid '.join(map(str,sites))
+    l = len(sites)
+    s = u.select_atoms(selectstring).residues
+    chol = u.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
+
+    protein_sterols = s + chol
+    t = window * threshold
+
+    count = 0
+    for i in starts:
+        site_sterolcontact = np.zeros((len(sites),len(chol)))
+        for f in u.trajectory[i:i+window]:
+                r = protein_sterols.atoms.center_of_mass(compound='residues')
+                contact_mat = distances.contact_matrix(r, cutoff=contact_threshold)
+
+                # take only rows representing sites contacting sterols
+                z = contact_mat[:len(sites),len(sites):]
+                site_sterolcontact += z
+        finalmat = (site_sterolcontact >= t)
+        count += np.sum(finalmat)
+
+    return count/len(starts)
+
+def viz_steroloccupancy(u):
+    d = {'threshold':[], 'avg_occupancy':[]}
+    for t in np.linspace(0.1,1,20):
+        o = sterol_occupancy(u,50,100,t)
+        d['threshold'].append(t)
+        d['avg_occupancy'].append(o)
+
+    plt.scatter(x=d['threshold'],y=d['avg_occupancy'])
+    plt.xlabel('threshold')
+    plt.ylabel('average cholesterol')
+    plt.show()
+    #maybe set threshold to 0.25.
+
+
+
+def sterol_occupancy_at_t(u,t,window,threshold):    
+    '''
+    returns average number of sterols bound for some threshold time over a window
+    t: start of window
+    window: length of window
+    threshold: threshold.
+    '''
+    sites = binding_sites('closed')
+
+    contact_threshold = 6
+    selectstring = 'resid ' +  ' or resid '.join(map(str,sites))
+    l = len(sites)
+    s = u.select_atoms(selectstring).residues
+    chol = u.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
+
+    protein_sterols = s + chol
+    th = window * threshold
+
+    count = 0
+    site_sterolcontact = np.zeros((len(sites),len(chol)))
+    for f in u.trajectory[t:t+window]:
+        r = protein_sterols.atoms.center_of_mass(compound='residues')
+        contact_mat = distances.contact_matrix(r, cutoff=contact_threshold)
+
+        # take only rows representing sites contacting sterols
+        z = contact_mat[:len(sites),len(sites):]
+        site_sterolcontact += z
+    finalmat = (site_sterolcontact >= th)
+    return np.sum(finalmat)
+
+def get_consensus_graph(u,s=0,d=None,threshold = 0.9,**kwargs):
+    '''
+    return consensus network as networkx object
+    u: mda universe
+    s: start
+    d: end
+    threshold: uh
+    '''
+
+    res = u.select_atoms('not resname CHOL and not resname POPC')
+    lenr = len(res.residues)
+    edgesmat = np.zeros(shape=(lenr,lenr))
+
+    for ts in tqdm.tqdm(u.trajectory[s:d]):
+        frame = u.trajectory.frame
+        r = res.atoms.center_of_mass(compound='residues')
+        mat = distances.contact_matrix(r, cutoff=6)
+        np.fill_diagonal(mat, 0)
+        edgesmat += mat
 
     
-    return results
+    t = len(u.trajectory[s:d]) * threshold
+    G = nx.from_numpy_array((edgesmat >= t))
+    
+    return G
+
+def network_centralities(u):
+    G = get_consensus_graph(u)
+    betweenness = nx.betweenness_centrality(G)
+    closeness = nx.closeness_centrality(G)
+    eigenvector = nx.eigenvector_centrality_numpy(G)
+
+    color_by_centrality(betweenness,'betweenness-15-closed')
+    color_by_centrality(closeness,'closeness-15-closed')
+    color_by_centrality(eigenvector,'eigenvector-15-closed')
+    eigenvector_sort = list(dict(sorted(eigenvector.items(), key=lambda x: x[1])).keys())[-10:]
+    closeness_sort = dict(sorted(closeness.items(), key=lambda x: x[1]))
+    betweenness_sort = list(dict(sorted(betweenness.items(), key=lambda x: x[1])).keys())[-10:]
+
+    return
+
+
+

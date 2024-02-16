@@ -39,6 +39,8 @@ def network_1_frame(u):
 
     # plt.show()
 
+
+
 def contact_network_residues(u,res):
     '''
     static contact network including only select residue(s) and its neighbors (and edges between neighbors.)
@@ -186,5 +188,53 @@ def network_selected(u,residues):
 
     return G
 
+def viz_consensus_graph(u,start=0,end=None,threshold = 0.9,**kwargs):
+    res = u.select_atoms('not resname CHOL and not resname POPC')
+    lenr = len(res.residues)
+    edgesmat = np.zeros(shape=(lenr,lenr))
+
+    for ts in u.trajectory[start:end]:
+        frame = u.trajectory.frame
+        r = res.atoms.center_of_mass(compound='residues')
+        mat = distances.contact_matrix(r, cutoff=6)
+        np.fill_diagonal(mat, 0)
+        edgesmat += mat
+
+    
+    t = len(u.trajectory[start:end]) * threshold
+    G = nx.from_numpy_array((edgesmat >= t))
+    nx.write_gexf(G,'closed_15_90.gexf')
+
+    for i in nx.connected_components(G):
+        if len(i) > 30:
+            k = MD_list_to_chimerax(i)
+            print(k)
+            print()
+    return
+
+def MD_list_to_chimerax(s):
+
+    l = sorted(s)
+    model = ''
+    i = -1
+    out = []
+    for n in l:
+        m = f'#1.{n//337+1}'
+        if m != model:
+            model = m
+            out.append(f'{model}:{n%337 + 35}')
+            i +=1
+        else:
+            out[i] += f',{n%337 + 35}'
+
+    return ''.join(out)
+
+
+def MD_to_chimerax(s):
+    return f'#1.{s//337+1}:{s%337 + 35}'
+
+
+
 def hypergraph_1_frame(u):
     '''hypergraph inferred using '''
+    return
