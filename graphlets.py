@@ -11,12 +11,17 @@ from sklearn.linear_model import LogisticRegression
 from subprocess import call
 from matplotlib.pyplot import cm
 from scipy import spatial
+from chimera_script import *
 
 
 
 
 
 
+one_letter ={'VAL':'V', 'ILE':'I', 'LEU':'L', 'GLU':'E', 'GLN':'Q', \
+'ASP':'D', 'ASN':'N', 'HIS':'H', 'TRP':'W', 'PHE':'F', 'TYR':'Y',    \
+'ARG':'R', 'LYS':'K', 'SER':'S', 'THR':'T', 'MET':'M', 'ALA':'A',    \
+'GLY':'G', 'PRO':'P', 'CYS':'C'}
 
 def output_consensus_graph(u,filename,s=0,d=None,threshold = 0.9,**kwargs):
     res = u.select_atoms('not resname CHOL and not resname POPC')
@@ -88,10 +93,16 @@ def PCA_gdd(ldirs):
     x = df.loc[:, features].values
     y = df.loc[:,['chol']].values
     x = StandardScaler().fit_transform(x)
-    pca = PCA(n_components=17)
+    pca = PCA()
+    principalComponents = pca.fit_transform(x)
+    evr = pca.explained_variance_ratio_.cumsum()
+    for i,j in enumerate(evr):
+        if j > 0.99:
+            nPCs = i + 1
+    pca = PCA(n_components=nPCs)
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
-             , columns = [f'PC{x}' for x in range(1,18)])
+             , columns = [f'PC{x}' for x in range(1,nPCs+1)])
     finalDf = pd.concat([principalDf, df[['chol','name']]], axis = 1)
     finalDf['start'] = finalDf['name'].str.split('-').str[3]
     finalDf['start'] = finalDf['start'].apply(int)
@@ -99,7 +110,7 @@ def PCA_gdd(ldirs):
     return finalDf,pca
 
 
-def plot_PCA_gdd(finalDf,pca):
+def plot_PCA_gdd(finalDf,out):
     # PLOTTING PCA. only for 15 and 30
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1) 
@@ -130,8 +141,7 @@ def plot_PCA_gdd(finalDf,pca):
     ax.grid()
     ax.yaxis.set_major_locator(AutoLocator())
     ax.xaxis.set_major_locator(AutoLocator())
-
-    plt.show()
+    plt.savefig(f'{out}.png')
 
 def PCA_logistic_selection(finalDf,pca):
     X = finalDf[[f'PC{x}' for x in range(1,18)]]
@@ -159,8 +169,6 @@ def PCA_logistic_selection(finalDf,pca):
 
 
 
-    
-
 def node_degree_signatures(filename):
     # get node degree signatures of orca output
     nodes = []
@@ -170,16 +178,17 @@ def node_degree_signatures(filename):
             nodes.append(l)
     return nodes
 
-def do_30_15():
+def do_30_15(replicate):
+    '''make uniform graphs for 30 and 15 conditions'''
     for i in ['30','15']:
         xtcs = []
-        for file in os.listdir(f'R1-{i}-closed'):
+        for file in os.listdir(f'{replicate}-{i}-closed'):
             if file.endswith('.xtc'):
-                xtcs.append(f'R1-{i}-closed/'+file)
+                xtcs.append(f'{replicate}-{i}-closed/'+file)
         xtcs.sort(key=lambda x: int(x.split('-')[1]))
-        u = mda.Universe(f'R1-{i}-closed/R1-0-start-membrane-3JYC.pdb',*xtcs)
-        output_uniform_graphs(u,400,f'R1-{i}-closed',lengraph=500)
-    return
+        u = mda.Universe(f'{replicate}-{i}-closed/{replicate}-0-start-membrane-3JYC.pdb',*xtcs)
+        output_uniform_graphs(u,400,f'../orca/input/{replicate}-{i}-closed/{replicate}-{i}-closed',lengraph=500)
+    return 
 
 
 
@@ -234,48 +243,63 @@ def PCA_node_signature(ldirs):
 
 
 
-def graphlets_cholesterol(u,basename):
+def output_graphs_graphlets_cholesterol(replicate):
+    '''make orca input for a replicate'''
     # which graphlets are associates with cholesterol occupancy (magnitude and boolean)?
     # find frames where cholesterol is bound
     #random sample of a bunch of frames
+    xtcs = []
     winlen = 50
-    starts = random.sample(range(len(u.trajectory)-winlen), 1000)
-    cholesterol = {}
-    sites = binding_sites('closed')
+    for i in ['30','15']:
+        for file in os.listdir(f'{replicate}-{i}-closed'):
+            if file.endswith('.xtc'):
+                xtcs.append(f'{replicate}-{i}-closed/'+file)
+        xtcs.sort(key=lambda x: int(x.split('-')[1]))
+        u = mda.Universe(f'{replicate}-{i}-closed/{replicate}-0-start-membrane-3JYC.pdb',*xtcs)
+        
+        starts = random.sample(range(len(u.trajectory)-winlen), 1000)
+        cholesterol = {}
+        sites = binding_sites('closed')
+        basename = f'../orca/input/{replicate}-{i}/{replicate}-{i}-closed'
 
-    # find how many cholesterols are binding in each sampled window
-    for t in tqdm.tqdm(starts):
-        bound = sterol_occupancy_at_t(u,t,winlen,0.40)
-        if bound not in cholesterol:
-            cholesterol[bound] = [t]
-        else:
-            cholesterol[bound].append(t)
-    # compute graphlets for a sample of each level of cholesterol binding
-    for n in cholesterol:
-        for f in cholesterol[n]:
-            output_consensus_graph(u,f'{basename}-contact-c{n}-f{f}.in',s=f,d=f+winlen)
-    
+        # find how many cholesterols are binding in each sampled window
+        print('calculating cholesterol binding')
+        for t in tqdm.tqdm(starts):
+            bound = sterol_occupancy_at_t(u,t,winlen,0.40)
+            if bound not in cholesterol:
+                cholesterol[bound] = [t]
+            else:
+                cholesterol[bound].append(t)
+        # compute graphlets for a sample of each level of cholesterol binding
+        print(f'outputting graphs of length {winlen} for cholesterol binding')
+        for n in cholesterol:
+            for f in cholesterol[n]:
+                output_consensus_graph(u,f'../orca/input/{basename}-contact/{basename}-contact-c{n}-f{f}.in',s=f,d=f+winlen)
+        
+    return
 
-    # compute random sample of other frames - don't need to do this because it's almost always bound
-    # output_single_sampled_graphs(u,500,f'{basename}-nocontact',contact_frames)
-    #### RUN ORCA
-    l = input()
+def graphlets_cholesterol_pca(r):
+    '''analyze orca output. r is R1-R3. Orca output must be in ../orca/output/{r}-<x>-closed'''
     #PCA
-    d = '/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-cholesterol-threshold40'
+    ldirs = [f'../orca/output/{r}-15-closed-contact',f'../orca/output/{r}-30-closed-contact']
     gdds = []
+    for d in ldirs:
+        for f in os.listdir(d):
+            if f == '.DS_Store': continue
+            gdd = graphlet_degree_distribution(os.path.join(d, f))
 
-    for f in os.listdir(d):
-        if f == '.DS_Store': continue
-        gdd = graphlet_degree_distribution(os.path.join(d, f))
+            chol = f.split('-')[4][1:]
+            if 'closed' in f: state = 'closed'
+            else: state = 'open'
+            if '-15-' in f:
+                chol_condition = 15
+            else:
+                chol_condition = 30
 
-        chol = f.split('-')[4][1:]
-        if 'closed' in f: state = 'closed'
-        else: state = 'open'
-
-        gdds.append([f,chol,state] + list(gdd))
+            gdds.append([f,chol,chol_condition,state] + list(gdd))
     
     
-    df = pd.DataFrame(gdds,columns=["name", "chol", "state"] + list(map(str,range(73))))
+    df = pd.DataFrame(gdds,columns=["name", "chol",'chol_condition', "state"] + list(map(str,range(73))))
     df['chol'] = df['chol'].apply(int)
 
     # https://builtin.com/machine-learning/pca-in-python
@@ -283,25 +307,35 @@ def graphlets_cholesterol(u,basename):
     x = df.loc[:, features].values
     y = df.loc[:,['chol']].values
     x = StandardScaler().fit_transform(x)
-    pca = PCA(n_components=17)
+
+    # take PCA components with 99% variance explained
+    pca = PCA()
+    principalComponents = pca.fit_transform(x)
+    evr = pca.explained_variance_ratio_.cumsum()
+    for i,j in enumerate(evr):
+        if j > 0.99:
+            nPCs = i + 1
+    pca = PCA(n_components=nPCs)
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
-             , columns = [f'PC{x}' for x in range(1,18)])
+             , columns = [f'PC{x}' for x in range(1,nPCs+1)])
+    
     finalDf = pd.concat([principalDf, df[['chol','name']]], axis = 1)
     finalDf['start'] = finalDf['name'].str.split('-').str[5].str[1:-4]
     finalDf['start'] = finalDf['start'].apply(int)
 
-    plot_PCA_gdd(finalDf,pca)
+    plot_PCA_gdd(finalDf,f'{r}_graphlet_cholesterol')
 
     #bar chart to show prevalence of graphlet x in each cholesterol state
-    result_group_chol= df.groupby(['chol'])
-    total_by_chol = result_group_chol['14'].agg([np.mean])
+    # result_group_chol= df.groupby(['chol'])
+    # total_by_chol = result_group_chol['14'].agg([np.mean])
 
-    total_by_chol.plot(kind='bar' ,y='mean',rot=0)
+    # pl = total_by_chol.plot(kind='bar' ,y='mean',rot=0)
 
-    plt.xlabel('# cholesterol "bound"')
-    plt.ylabel('average # graphlet 8')
-    plt.show()
+    # plt.xlabel('# cholesterol "bound"')
+    # plt.ylabel('average # graphlet 8')
+    # plt.savefig('graphlet_cholesterol')
+    # plt.clf()
 
     # bar chart to show mean euclidean distance from zero in each cholesterol state
     result_group_chol= df.groupby(['chol'])
@@ -310,7 +344,7 @@ def graphlets_cholesterol(u,basename):
     tbc = tbc-tbc[0]
     total_by_chol['graphlet vector L2 norm'] = tbc
     total_by_chol.plot(kind='bar' ,y='graphlet vector L2 norm',rot=0)
-    plt.show()
+    plt.savefig(f'{r}_movement_by_chol')
     return
 
 def output_single_frame_graph(u,frame,basename):
@@ -341,24 +375,102 @@ def output_single_sampled_graphs(u,numgraphs,basename,exclude):
 
     return
 
-def node_pca():
+def output_for_node_pca(r):
     # output 2 consensus graph for the entire thing
     for conc in ['15','30']:
         xtcs = []
-        for file in os.listdir('R1-15-closed'):
+        for file in os.listdir(f'{r}-{conc}-closed'):
             if file.endswith('.xtc'):
-                xtcs.append('R1-15-closed/'+file)
+                xtcs.append(f'{r}-{conc}-closed/'+file)
         xtcs.sort(key=lambda x: int(x.split('-')[1]))
-        u = mda.Universe('R1-15-closed/R1-0-start-membrane-3JYC.pdb',*xtcs)
+        u = mda.Universe(f'{r}-{conc}-closed/{r}-0-start-membrane-3JYC.pdb',*xtcs)
 
-        filename = f'R1-{conc}-closed-full.in'
+        filename = f'../orca/output/{r}-full/{r}-{conc}-closed-full.in'
         output_consensus_graph(u,filename)
-    
     ## RUN ORCA
-    input()
+    return
+
+def node_pca_analysis(r):
     # get graphlet composition of each node
-    outs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-full/R1-15-closed-full.out','/Users/Tommy/Desktop/thesis/orca/output/R1-full/R1-30-closed-full.out']
-    outdirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-uniform','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-uniform']
+    outdirs = [f'../orca/output/{r}-15-full',f'../orca/output/{r}-30-full']
+    #outdirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-uniform','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-uniform']
+    rows = []
+    for d in outdirs:
+        for fn in os.listdir(d):
+            if fn == '.DS_Store': continue
+            if '-30-' in fn: chol = 30
+            else: chol = 15
+            if 'closed' in fn: state = 'closed'
+            else: state = 'open'
+
+            with open(os.path.join(d, fn)) as f:
+                for i,line in enumerate(f): 
+                    l = line.split(' ')
+                    rows.append([fn,i,chol,state] + l)
+    df = pd.DataFrame(rows,columns=["name", 'node',"chol", "state"] + list(range(73)))
+
+    # load mda universe. just for getting residue names
+    u = mda.Universe('{r}-30-closed/{r}-0-start-membrane-3JYC.pdb','{r}-30-closed/R1-0-1000-3JYC.xtc')
+
+
+    #PCA
+    features = list(range(73))
+    x = df.loc[:, features].values
+    y = df.loc[:,['chol']].values
+    x = StandardScaler().fit_transform(x)
+    pca = PCA(n_components=37)
+    principalComponents = pca.fit_transform(x)
+    principalDf = pd.DataFrame(data = principalComponents
+             , columns = [f'PC{x}' for x in range(1,38)])
+    finalDf = pd.concat([principalDf, df[['chol','name','node']]], axis = 1)
+    PCs = [f'PC{x}' for x in range(1,38)]
+
+    # PCA see which nodes move the most
+    df[features] = df[features].astype(int)
+    result_group_node= finalDf.groupby('node')
+    distance_by_node = result_group_node[PCs].apply(lambda x: spatial.distance.pdist(x.to_numpy(),metric='euclidean').mean())
+    ax = distance_by_node.plot(kind='bar' ,y='distance_by_node',rot=0,ec='blue')
+    thresh = 25
+    for p in ax.patches:
+        resid = int(p.get_x() + 1.25)
+        res = int(MD_to_chimerax(resid)[5:])
+        resname = one_letter[u.residues[resid-1].resname]
+        label = resname + str(res)
+        if p.get_height() > thresh:
+            ax.annotate(
+                label, xy=(p.get_x(), p.get_height() + 0.1), fontsize=4
+            )
+            print(label,p.get_height())
+    plt.tight_layout()
+    plt.savefig(f'{r}-nodemovement.png')
+
+
+    # These results are zero-indexed. MD results are 1-indexed so change to 1
+    distance_by_node.index += 1 
+    d_s = distance_by_node.sort_values()
+
+    dd=d_s.to_dict()
+    dd_to_csv(dd,f'{r}-nodepca')
+
+
+    return
+
+
+
+
+def node_graphlets_cholesterol(u,basename):
+    # which graphlets are associated with cholesterol occupancy (magnitude and boolean)?
+    # find frames where cholesterol is bound
+    #random sample of a bunch of frames
+      
+    
+
+    # compute random sample of other frames - don't need to do this because it's almost always bound
+    # output_single_sampled_graphs(u,500,f'{basename}-nocontact',contact_frames)
+    #### RUN ORCA
+    l = input()
+    #PCA
+    outdirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-cholesterol-threshold40','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-cholesterol-threshold40']
     rows = []
     for d in outdirs:
         for fn in os.listdir(d):
@@ -379,17 +491,17 @@ def node_pca():
     x = df.loc[:, features].values
     y = df.loc[:,['chol']].values
     x = StandardScaler().fit_transform(x)
-    pca = PCA(n_components=37)
+    pca = PCA(n_components=50)
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
-             , columns = [f'PC{x}' for x in range(1,38)])
+             , columns = [f'PC{x}' for x in range(1,51)])
     finalDf = pd.concat([principalDf, df[['chol','name','node']]], axis = 1)
-    PCs = [f'PC{x}' for x in range(1,38)]
+    PCs = [f'PC{x}' for x in range(1,51)]
 
     # PCA see which nodes move the most
     df[features] = df[features].astype(int)
     result_group_node= finalDf.groupby('node')
-    distance_by_node = result_group_node[PCs].apply(lambda x: spatial.distance.pdist(x.to_numpy(),metric='cosine').mean())
+    distance_by_node = result_group_node[PCs].apply(lambda x: spatial.distance.pdist(x.to_numpy(),metric = 'cosine').mean())
     distance_by_node = distance_by_node[~(distance_by_node >= 1)]
     distance_by_node.plot(kind='bar' ,y='distance_by_node',rot=0)
 
@@ -400,14 +512,14 @@ def node_pca():
     dd=d_s.to_dict()
     color_by_centrality(dd,'pca_node_movement_cosine')
     MD_to_chimerax()
-    
-    
-
-
-
-
-    plt.show()
-
     return
 
 
+def L264():
+    # L 264 moves a lot in the graphlet analysis.
+    # (it's 229 in the MD resid)
+    dff = df.loc[df['node'].isin([228+337*i for i in range(4)])] 
+    dff['node'] = dff['node'] + 1
+    dff
+    dff.to_csv('L264_nodegraphlet.csv')
+    return

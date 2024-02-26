@@ -230,8 +230,6 @@ def MD_list_to_chimerax(s):
     return ''.join(out)
 
 
-def MD_to_chimerax(s):
-    return f'#1.{s//337+1}:{s%337 + 35}'
 
 
 

@@ -3,14 +3,14 @@ from network_statistics import *
 import os
 
 xtcs = []
-for file in os.listdir('R1-15-closed'):
+for file in os.listdir('R1-30-closed'):
     if file.endswith('.xtc'):
-        xtcs.append('R1-15-closed/'+file)
+        xtcs.append('R1-30-closed/'+file)
 xtcs.sort(key=lambda x: int(x.split('-')[1]))
 
 
 u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb','R1-30-closed/R1-0-1000-3JYC.xtc')
-u = mda.Universe('R1-15-closed/R1-0-start-membrane-3JYC.pdb',*xtcs)
+u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb',*xtcs)
 
 
 def testspeed():
