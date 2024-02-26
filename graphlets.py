@@ -12,7 +12,7 @@ from subprocess import call
 from matplotlib.pyplot import cm
 from scipy import spatial
 from chimera_script import *
-
+from pathlib import Path
 
 
 
@@ -38,7 +38,11 @@ def output_consensus_graph(u,filename,s=0,d=None,threshold = 0.9,**kwargs):
     
     t = len(u.trajectory[s:d]) * threshold
     G = nx.from_numpy_array((edgesmat >= t))
-    
+
+    #make folder if doesn't exist
+    p = os.path.dirname(filename)
+    Path(p).mkdir(parents=True, exist_ok=True)
+
     with open(filename, 'w') as f:
         f.write(f'{len(G.nodes)} {len(G.edges)}\n') # for orca input
         for line in nx.generate_edgelist(G,delimiter = ' ',data=False):
