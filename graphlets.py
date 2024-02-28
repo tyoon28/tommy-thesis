@@ -252,9 +252,10 @@ def output_graphs_graphlets_cholesterol(replicate):
     # which graphlets are associates with cholesterol occupancy (magnitude and boolean)?
     # find frames where cholesterol is bound
     #random sample of a bunch of frames
-    xtcs = []
     winlen = 50
     for i in ['30','15']:
+        print(f'making cholesterol graphs for {replicate}-{i}')
+        xtcs = []
         for file in os.listdir(f'{replicate}-{i}-closed'):
             if file.endswith('.xtc'):
                 xtcs.append(f'{replicate}-{i}-closed/'+file)
@@ -267,7 +268,7 @@ def output_graphs_graphlets_cholesterol(replicate):
         basename = f'{replicate}-{i}-closed'
 
         # find how many cholesterols are binding in each sampled window
-        print('calculating cholesterol binding')
+        print(f'calculating cholesterol binding for {replicate}-{i}')
         for t in tqdm.tqdm(starts):
             bound = sterol_occupancy_at_t(u,t,winlen,0.40)
             if bound not in cholesterol:
@@ -275,11 +276,11 @@ def output_graphs_graphlets_cholesterol(replicate):
             else:
                 cholesterol[bound].append(t)
         # compute graphlets for a sample of each level of cholesterol binding
-        print(f'outputting graphs of length {winlen} for cholesterol binding')
+        print(f'outputting graphs of length {winlen} for cholesterol binding for {replicate}-{i}')
         for n in cholesterol:
             for f in cholesterol[n]:
                 output_consensus_graph(u,f'../orca/input/{basename}-contact/{basename}-contact-c{n}-f{f}.in',s=f,d=f+winlen)
-        
+        print(f'done with cholesterol graphs for {replicate}-{i}')
     return
 
 def graphlets_cholesterol_pca(r):
@@ -414,7 +415,7 @@ def node_pca_analysis(r):
     df = pd.DataFrame(rows,columns=["name", 'node',"chol", "state"] + list(range(73)))
 
     # load mda universe. just for getting residue names
-    u = mda.Universe('{r}-30-closed/{r}-0-start-membrane-3JYC.pdb','{r}-30-closed/R1-0-1000-3JYC.xtc')
+    u = mda.Universe(f'{r}-30-closed/{r}-0-start-membrane-3JYC.pdb','{r}-30-closed/R1-0-1000-3JYC.xtc')
 
 
     #PCA
