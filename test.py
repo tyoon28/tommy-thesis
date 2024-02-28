@@ -12,6 +12,11 @@ xtcs.sort(key=lambda x: int(x.split('-')[1]))
 u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb','R1-30-closed/R1-0-1000-3JYC.xtc')
 u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb',*xtcs)
 
+for ts in u.trajectory[:20]:
+    time = u.trajectory.time
+    rgyr = u.atoms.radius_of_gyration()
+    print(f"Frame: {ts.frame:3d}, Time: {time:4.0f} ps, Rgyr: {rgyr:.4f} A")
+
 
 def testspeed():
 

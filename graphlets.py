@@ -183,7 +183,7 @@ def node_degree_signatures(filename):
     return nodes
 
 def do_30_15(replicate):
-    '''make uniform graphs for 30 and 15 conditions'''
+    '''make uniform snapshots for 30 and 15 conditions (length 500)'''
     for i in ['30','15']:
         xtcs = []
         for file in os.listdir(f'{replicate}-{i}-closed'):
@@ -264,7 +264,7 @@ def output_graphs_graphlets_cholesterol(replicate):
         starts = random.sample(range(len(u.trajectory)-winlen), 1000)
         cholesterol = {}
         sites = binding_sites('closed')
-        basename = f'../orca/input/{replicate}-{i}/{replicate}-{i}-closed'
+        basename = f'{replicate}-{i}-closed'
 
         # find how many cholesterols are binding in each sampled window
         print('calculating cholesterol binding')

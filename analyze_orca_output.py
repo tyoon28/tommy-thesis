@@ -1,5 +1,8 @@
 # to be run after make_orca_input and running orca
 from graphlets import *
+import warnings
+
+
 
 def main():
     for r in ['R2,R3']:
@@ -14,4 +17,5 @@ def main():
 
 
 if __name__ == "__main__":
+    warnings.filterwarnings('ignore')
     main()
