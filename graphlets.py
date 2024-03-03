@@ -390,7 +390,7 @@ def output_for_node_pca(r):
         xtcs.sort(key=lambda x: int(x.split('-')[1]))
         u = mda.Universe(f'{r}-{conc}-closed/{r}-0-start-membrane-3JYC.pdb',*xtcs)
 
-        filename = f'../orca/output/{r}-full/{r}-{conc}-closed-full.in'
+        filename = f'../orca/input/{r}-full/{r}-{conc}-closed-full.in'
         output_consensus_graph(u,filename)
     ## RUN ORCA
     return

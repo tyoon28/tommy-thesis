@@ -4,6 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from scipy import spatial
 from chimera_script import *
+from matplotlib.ticker import AutoLocator
 
 
 one_letter ={'VAL':'V', 'ILE':'I', 'LEU':'L', 'GLU':'E', 'GLN':'Q', \
@@ -112,13 +113,16 @@ def dyngraphlets_cholesterol(u):
     x = df.loc[:, features].values
     y = df.loc[:,['chol']].values
     x = StandardScaler().fit_transform(x)
-    pca = PCA(n_components = 3)
+    pca = PCA(n_components = 4)
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
              , columns = [f'PC{x}' for x in range(1,4)])
     finalDf = pd.concat([principalDf, df[['chol','name']]], axis = 1)
     finalDf['start'] = finalDf['name'].str.split('-').str[3]
     finalDf['start'] = finalDf['start'].apply(int)
+
+    #finalDf['distance'] = finalDf[]
+
 
 
 def plot_PCA_dyn_gdd(finalDf,pca):
@@ -157,29 +161,51 @@ def plot_PCA_dyn_gdd(finalDf,pca):
 
 
 def dynamic_PCA_nodes(r):
-    outdirs = [f'/Users/Tommy/Desktop/thesis/dynamic_graphlets/output/{r}-15-closed-len50/dgdv',f'/Users/Tommy/Desktop/thesis/dynamic_graphlets/output/{f}-30-closed-len50/dgdv']
+    outdirs = [f'/Users/Tommy/Desktop/thesis/dynamic_graphlets/output/{r}-15-closed-len50/dgdv',f'/Users/Tommy/Desktop/thesis/dynamic_graphlets/output/{r}-30-closed-len50/dgdv']
     #outdirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-uniform','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-uniform']
-    rows = []
-    for d in outdirs:
-        for fn in os.listdir(d):
-            if fn == '.DS_Store': continue
-            if '-30-' in fn: chol = 30
-            else: chol = 15
-            if 'closed' in fn: state = 'closed'
-            else: state = 'open'
-
-            with open(os.path.join(d, fn)) as f:
-                for i,line in enumerate(f): 
-                    l = line.split(' ')
-                    rows.append([fn,i,chol,state] + l)
-
     nfeatures = 3728 # length of vector
+    # load mda universe. just for getting residue names and n residues
+    u = mda.Universe(f'{r}-30-closed/{r}-0-start-membrane-3JYC.pdb',f'{r}-30-closed/R1-0-1000-3JYC.xtc')
+    nres = len(u.select_atoms('not resname CHOL and not resname POPC').residues)
 
-    # this is huge for dynamic graphlets.....
-    df = pd.DataFrame(rows,columns=["name", 'node',"chol", "state"] + list(range(3728)))
+    rows = np.zeros((nres*2,nfeatures+2))
+    for i in range(len(rows)):
+        rows[i][0] = i % nres + 1 # set res id in [0]
+        # set chol state in [1]
+        if i //nres == 0:
+            rows[i][1] = 15
+        else: rows[i][1] = 30
+        
+    # make this np array with averages
+    for d in outdirs:
+        for fn in tqdm.tqdm(os.listdir(d)):
+            if fn == '.DS_Store': continue
+            if '-15-' in fn: 
+                start = 0
+                end = nres
+            else: 
+                start = nres
+                end = None
+            try:
+                rows[start:end, 2:] += np.loadtxt(os.path.join(d, fn),dtype=int)
+            
+            # sometimes a node has no edges through the length of the window.
+            # so have to insert a row with zero.
+            except ValueError:
+                notseen = lookformissing(os.path.join(d, fn))
+                x = np.loadtxt(os.path.join(d, fn),dtype=int)
+                for i in notseen:
+                    x = np.insert(x,int(i),np.zeros(nfeatures),0)
+                print(notseen)
+                rows[start:end, 2:] += x
 
-    # load mda universe. just for getting residue names
-    u = mda.Universe(f'{r}-30-closed/{r}-0-start-membrane-3JYC.pdb','{r}-30-closed/R1-0-1000-3JYC.xtc')
+    
+
+    # huge for dynamic graphlets.....
+    # does not include channel state yet
+    df = pd.DataFrame(rows,columns=['node',"chol"] + list(range(nfeatures)))
+
+    
 
 
     #PCA
@@ -201,29 +227,45 @@ def dynamic_PCA_nodes(r):
                                 columns = [f'PC{x}' for x in range(1,nPCs+1)])
     
 
-    finalDf = pd.concat([principalDf, df[['chol','name','node']]], axis = 1)
+    finalDf = pd.concat([principalDf, df[['node','chol']]], axis = 1)
     PCs = [f'PC{x}' for x in range(1,nPCs+1)]
 
     # PCA see which nodes move the most
     df[features] = df[features].astype(int)
     result_group_node= finalDf.groupby('node')
     distance_by_node = result_group_node[PCs].apply(lambda x: spatial.distance.pdist(x.to_numpy(),metric='euclidean').mean())
-    ax = distance_by_node.plot(kind='bar' ,y='distance_by_node',rot=0,ec='blue')
+    distance_by_node.plot(kind='bar' ,y='distance_by_node',rot=0,ec='blue')
     thresh = 25
-    for p in ax.patches:
-        resid = int(p.get_x() + 1.25)
-        res = int(MD_to_chimerax(resid)[5:])
-        resname = one_letter[u.residues[resid-1].resname]
-        label = resname + str(res)
-        if p.get_height() > thresh:
-            ax.annotate(label, xy=(p.get_x(), p.get_height() + 0.1), fontsize=4)
+    # for p in ax.patches:
+    #     resid = int(p.get_x() + 1.25)
+    #     res = int(MD_to_chimerax(resid)[5:])
+    #     resname = one_letter[u.residues[resid-1].resname]
+    #     label = resname + str(res)
+    #     if p.get_height() > thresh:
+    #         ax.annotate(label, xy=(p.get_x(), p.get_height() + 0.1), fontsize=4)
     plt.tight_layout()
-    plt.savefig(f'{r}-nodemovement.png')
+    plt.savefig(f'{r}-dyn-nodemovement.png')
 
 
-    # These results are zero-indexed. MD results are 1-indexed so change to 1
-    distance_by_node.index += 1 
+
     d_s = distance_by_node.sort_values()
 
     dd=d_s.to_dict()
-    dd_to_csv(dd,f'{r}-nodepca')
+    dd_to_csv(dd,f'{r}-dyn-nodepca',u)
+    
+
+
+
+def lookformissing(fn):
+    fn = '/Users/Tommy/Desktop/thesis/dynamic_graphlets/input/R1-15-length50/R1-15-closed-14281-14331.in'
+    seen = []
+    with open(fn) as f:
+        for line in f:
+            l = line.split()
+            if l[0] not in seen: seen.append(l[0])
+            if l[1] not in seen: seen.append(l[1])
+    notseen = []
+    for i in range(1348):
+        if str(i) not in seen:
+            notseen.append(str(i))
+    return notseen

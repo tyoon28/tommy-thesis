@@ -60,14 +60,14 @@ def color_by_centrality(d,fn):
         for i in d_sort:
             c = next(color)
             c = c * 255
-            s = MD_to_chimerax(i)
+            s = MD_to_chimerax(int(i))
             print(f'color {s} rgba({round(c[0])},{round(c[1])},{round(c[2])},1)',file=f)
             
     return
 
 
 
-def dd_to_csv(d,fn):
+def dd_to_csv(d,fn,u):
     d_sort = dict(sorted(d.items(), key=lambda x: x[1]))
 
     a = np.array(list(d_sort.values()),dtype=np.longdouble)
@@ -78,7 +78,7 @@ def dd_to_csv(d,fn):
         wr = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         sh = wr.writerow(['subunit','residue ID','MD simulation ID','residue name','node PCA distance','PCA distance normalized to max'])
         for i in d_sort:
-            resname = u.atoms.select_atoms(f'resid {i}').residues.resnames[0]
+            resname = u.atoms.select_atoms(f'resid {int(i)}').residues.resnames[0]
             s = MD_to_chimerax(i)
             subunit = s[3]
             residue = s[5:]
