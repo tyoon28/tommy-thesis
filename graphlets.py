@@ -413,7 +413,7 @@ def node_pca_analysis(r):
     df = pd.DataFrame(rows,columns=["name", 'node',"chol", "state"] + list(range(73)))
 
     # load mda universe. just for getting residue names
-    u = mda.Universe(f'{r}-30-closed/{r}-0-start-membrane-3JYC.pdb',f'{r}-30-closed/R1-0-1000-3JYC.xtc')
+    u = mda.Universe(f'{r}-30-closed/{r}-0-start-membrane-3JYC.pdb',f'{r}-30-closed/{r}-0-1000-3JYC.xtc')
 
 
     #PCA
