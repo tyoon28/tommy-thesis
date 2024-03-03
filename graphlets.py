@@ -135,11 +135,9 @@ def plot_PCA_gdd(finalDf,out):
         indicesToKeep = finalDf['chol'] == target
         if len(indicesToKeep) > 10:
             c = next(color)
-            
-            
             ax.scatter(finalDf.loc[indicesToKeep, 'PC1']
                     , finalDf.loc[indicesToKeep, 'PC2'],
-                    c=c)
+                    color=c)
             
     ax.legend(targets)
     ax.grid()
@@ -397,7 +395,7 @@ def output_for_node_pca(r):
 
 def node_pca_analysis(r):
     # get graphlet composition of each node
-    outdirs = [f'../orca/output/{r}-15-full',f'../orca/output/{r}-30-full']
+    outdirs = [f'../orca/output/{r}-full']
     #outdirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-uniform','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-uniform']
     rows = []
     for d in outdirs:
