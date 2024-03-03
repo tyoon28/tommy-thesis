@@ -453,7 +453,7 @@ def node_pca_analysis(r):
     d_s = distance_by_node.sort_values()
 
     dd=d_s.to_dict()
-    dd_to_csv(dd,f'{r}-nodepca')
+    dd_to_csv(dd,f'{r}-nodepca',u)
 
 
     return
