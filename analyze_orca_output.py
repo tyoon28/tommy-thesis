@@ -7,7 +7,7 @@ import warnings
 def main():
     for r in ['R2','R3']:
         print(f'working on {r}')
-        ldirs = [f'../orca/output/{r}-15-closed-uniform',f'../orca/output/{r}-30-closed-uniform']
+        ldirs = [f'../orca/output/{r}-15-closed',f'../orca/output/{r}-30-closed']
 
         finalDf,pca = PCA_gdd(ldirs)
         print(f'making PCA plots for {r}')
