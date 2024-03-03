@@ -5,7 +5,7 @@ import warnings
 
 
 def main():
-    for r in ['R2,R3']:
+    for r in ['R2','R3']:
         print(f'working on {r}')
         ldirs = [f'../orca/output/{r}-15-closed-uniform',f'../orca/output/{r}-30-closed-uniform']
 
