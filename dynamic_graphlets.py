@@ -5,6 +5,9 @@ from sklearn.decomposition import PCA
 from scipy import spatial
 from chimera_script import *
 from matplotlib.ticker import AutoLocator
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+
 
 
 one_letter ={'VAL':'V', 'ILE':'I', 'LEU':'L', 'GLU':'E', 'GLN':'Q', \
@@ -116,7 +119,7 @@ def dyngraphlets_cholesterol(u):
     pca = PCA(n_components = 4)
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
-             , columns = [f'PC{x}' for x in range(1,4)])
+             , columns = [f'PC{x}' for x in range(1,5)])
     finalDf = pd.concat([principalDf, df[['chol','name']]], axis = 1)
     finalDf['start'] = finalDf['name'].str.split('-').str[3]
     finalDf['start'] = finalDf['start'].apply(int)
@@ -158,6 +161,35 @@ def plot_PCA_dyn_gdd(finalDf,pca):
     ax.xaxis.set_major_locator(AutoLocator())
 
     plt.show()
+
+def PCA_logistic_selection(finalDf,pca):
+    X = finalDf[[f'PC{x}' for x in range(1,5)]]
+    y = finalDf['chol']
+    X_train, X_test, y_train, y_test = train_test_split(X,y , 
+                                    random_state=104,  
+                                    train_size=0.8,  
+                                    shuffle=True) 
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    model = LogisticRegression(solver='liblinear', random_state=0)
+    model.fit(X_train, y_train)
+    model.coef_
+    y_pred = model.predict(X_test)
+    print('Accuracy of logistic regression classifier on test set: {:.2f}'.format(model.score(X_test, y_test)))
+    coefficients = model.coef_[0]
+
+    feature_importance = pd.DataFrame({'Feature': X.columns, 'Importance': np.abs(coefficients)})
+    feature_importance = feature_importance.sort_values('Importance', ascending=True)
+    feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
+    plt.show()
+
+def find_pca_loadings(pca,component):
+    c = pca.components_[component-1]
+    indices = np.argsort(c)
+    loadings = [c[i] for i in indices]
+    return
 
 
 def dynamic_PCA_nodes(r):

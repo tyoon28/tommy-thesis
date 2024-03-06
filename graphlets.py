@@ -78,7 +78,7 @@ def graphlet_degree_distribution(filename):
 
 def PCA_gdd(ldirs):
     # ldirs: list of directories containing separate classes of networks
-    #ldirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-closed-15','/Users/Tommy/Desktop/thesis/orca/output/R1-closed-30']
+    #ldirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-uniform','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-uniform']
     gdds = []
     for d in ldirs:
         for f in os.listdir(d):
@@ -427,7 +427,7 @@ def node_pca_analysis(r):
              , columns = [f'PC{x}' for x in range(1,38)])
     finalDf = pd.concat([principalDf, df[['chol','name','node']]], axis = 1)
     PCs = [f'PC{x}' for x in range(1,38)]
-
+    
     # PCA see which nodes move the most
     df[features] = df[features].astype(int)
     result_group_node= finalDf.groupby('node')

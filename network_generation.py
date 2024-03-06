@@ -189,6 +189,7 @@ def network_selected(u,residues):
     return G
 
 def viz_consensus_graph(u,start=0,end=None,threshold = 0.9,**kwargs):
+    # for gephi input
     res = u.select_atoms('not resname CHOL and not resname POPC')
     lenr = len(res.residues)
     edgesmat = np.zeros(shape=(lenr,lenr))
@@ -236,3 +237,31 @@ def MD_list_to_chimerax(s):
 def hypergraph_1_frame(u):
     '''hypergraph inferred using '''
     return
+
+def gephi_input(u):
+    # for visualizing. not done
+    res = u.select_atoms('not resname CHOL and not resname POPC')
+    lenr = len(res.residues)
+    edgesmat = np.zeros(shape=(lenr,lenr))
+
+    for ts in u.trajectory:
+        frame = u.trajectory.frame
+        r = res.atoms.center_of_mass(compound='residues')
+        mat = distances.contact_matrix(r, cutoff=6)
+        np.fill_diagonal(mat, 0)
+        edgesmat += mat
+    
+    t = len(u.trajectory) * 0.9
+    G = nx.from_numpy_array((edgesmat >= t))
+    two = nx.shortest_path(G,265)
+    for i in binding_sites('all'):
+        try:
+            print(two[i])
+        except KeyError:
+            pass
+    d = nx.to_pandas_edgelist(G,source='Source',target='Target')
+    d['Type'] = 'undirected'
+    d['Id'] = d.index
+    d['Weight'] = 1
+    d['binding'] = 1
+    nx.write_gexf(G,'closed_15_90.gexf')
