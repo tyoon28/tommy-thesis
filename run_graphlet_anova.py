@@ -9,7 +9,7 @@ from statsmodels.formula.api import ols
 
 
 def main():
-    ldirs = [f'../orca/output/{r}-{c}-closed-uniform' for r in ['R1','R2','R3'] for c in ['15','30']]
+    ldirs = [f'../orca/output/{r}-{c}-closed' for r in ['R1','R2','R3'] for c in ['15','30']]
     # load data from uniform slices into df from multiple replicates
     gdds = []
     for d in ldirs:
