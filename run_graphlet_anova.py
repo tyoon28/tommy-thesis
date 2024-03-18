@@ -33,7 +33,7 @@ def main():
     keys = []
     tables = []
     for g in range(73):
-        model = ols(f'{g} ~ chol', data=df).fit()
+        model = ols(f'g{g} ~ chol', data=df).fit()
         anova_table = sm.stats.anova_lm(model, typ=2)
 
         keys.append(g)
