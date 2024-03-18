@@ -18,7 +18,7 @@ def network_1_frame(u):
     res = u.select_atoms('not resname CHOL and not resname POPC').atoms.center_of_mass(compound='residues')
 
     # contact matrix
-    mat = distances.contact_matrix(res, cutoff=contact_threshold)
+    mat = distances.contact_matrix(res, cutoff=6)
 
     # Graph from adjacency matrix
     G = nx.from_numpy_array(mat)
@@ -194,7 +194,7 @@ def viz_consensus_graph(u,start=0,end=None,threshold = 0.9,**kwargs):
     lenr = len(res.residues)
     edgesmat = np.zeros(shape=(lenr,lenr))
 
-    for ts in u.trajectory[start:end]:
+    for ts in tqdm.tqdm(u.trajectory[start:end]):
         frame = u.trajectory.frame
         r = res.atoms.center_of_mass(compound='residues')
         mat = distances.contact_matrix(r, cutoff=6)
@@ -206,11 +206,11 @@ def viz_consensus_graph(u,start=0,end=None,threshold = 0.9,**kwargs):
     G = nx.from_numpy_array((edgesmat >= t))
     nx.write_gexf(G,'closed_15_90.gexf')
 
-    for i in nx.connected_components(G):
-        if len(i) > 30:
-            k = MD_list_to_chimerax(i)
-            print(k)
-            print()
+    # for i in nx.connected_components(G):
+    #     if len(i) > 30:
+    #         k = MD_list_to_chimerax(i)
+    #         print(k)
+    #         print()
     return
 
 def MD_list_to_chimerax(s):

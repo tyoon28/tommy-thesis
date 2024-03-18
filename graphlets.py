@@ -393,7 +393,7 @@ def output_for_node_pca(r):
     ## RUN ORCA
     return
 
-def node_pca_analysis(r):
+def node_pca_analysis(r,output=False):
     # get graphlet composition of each node
     outdirs = [f'../orca/output/{r}-full']
     #outdirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-uniform','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-uniform']
@@ -413,7 +413,8 @@ def node_pca_analysis(r):
     df = pd.DataFrame(rows,columns=["name", 'node',"chol", "state"] + list(range(73)))
 
     # load mda universe. just for getting residue names
-    u = mda.Universe(f'{r}-30-closed/{r}-0-start-membrane-3JYC.pdb',f'{r}-30-closed/{r}-0-1000-3JYC.xtc')
+    #u = mda.Universe(f'{r}-30-closed/{r}-0-start-membrane-3JYC.pdb',f'{r}-30-closed/{r}-0-1000-3JYC.xtc')
+    u = mda.Universe(f'R1-30-closed/R1-0-start-membrane-3JYC.pdb',f'R1-30-closed/R1-0-1000-3JYC.xtc')
 
 
     #PCA
@@ -432,20 +433,20 @@ def node_pca_analysis(r):
     df[features] = df[features].astype(int)
     result_group_node= finalDf.groupby('node')
     distance_by_node = result_group_node[PCs].apply(lambda x: spatial.distance.pdist(x.to_numpy(),metric='euclidean').mean())
-    ax = distance_by_node.plot(kind='bar' ,y='distance_by_node',rot=0,ec='blue')
-    thresh = 25
-    for p in ax.patches:
-        resid = int(p.get_x() + 1.25)
-        res = int(MD_to_chimerax(resid)[5:])
-        resname = one_letter[u.residues[resid-1].resname]
-        label = resname + str(res)
-        if p.get_height() > thresh:
-            ax.annotate(
-                label, xy=(p.get_x(), p.get_height() + 0.1), fontsize=4
-            )
-            print(label,p.get_height())
-    plt.tight_layout()
-    plt.savefig(f'{r}-nodemovement.png')
+    if output:
+        ax = distance_by_node.plot(kind='bar' ,y='distance_by_node',rot=0,ec='blue')
+        thresh = 25
+        for p in ax.patches:
+            resid = int(p.get_x() + 1.25)
+            res = int(MD_to_chimerax(resid)[5:])
+            resname = one_letter[u.residues[resid-1].resname]
+            label = resname + str(res)
+            if p.get_height() > thresh:
+                ax.annotate(
+                    label, xy=(p.get_x(), p.get_height() + 0.1), fontsize=4
+                )
+        plt.tight_layout()
+        plt.savefig(f'{r}-nodemovement.png')
 
 
     # These results are zero-indexed. MD results are 1-indexed so change to 1
@@ -453,11 +454,21 @@ def node_pca_analysis(r):
     d_s = distance_by_node.sort_values()
 
     dd=d_s.to_dict()
-    dd_to_csv(dd,f'{r}-nodepca',u)
+    if output: dd_to_csv(dd,f'{r}-nodepca',u)
 
 
-    return
+    return dd
 
+def replicates_node_graphlet():
+    bigd = {}
+    for r in ['R1','R2','R3']:
+        d = node_pca_analysis(r)
+        for i in d:
+            if i not in bigd:
+                bigd[i] = d[i]
+            else:
+                bigd[i] += d[i]
+    dd_to_csv(bigd,f'R1-3combined',u)
 
 
 
@@ -518,11 +529,39 @@ def node_graphlets_cholesterol(u,basename):
     return
 
 
-def L264():
-    # L 264 moves a lot in the graphlet analysis.
+def L264(r='R1'):
+    # L 264 moves a lot in the graphlet analysis. so does I177.(Transmembrane)
     # (it's 229 in the MD resid)
+    outdirs = [f'../orca/output/{r}-full']
+    #outdirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-uniform','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-uniform']
+    rows = []
+    for d in outdirs:
+        for fn in os.listdir(d):
+            if fn == '.DS_Store': continue
+            if '-30-' in fn: chol = 30
+            else: chol = 15
+            if 'closed' in fn: state = 'closed'
+            else: state = 'open'
+
+            with open(os.path.join(d, fn)) as f:
+                for i,line in enumerate(f): 
+                    l = line.split(' ')
+                    rows.append([fn,i,chol,state] + l)
+    df = pd.DataFrame(rows,columns=["name", 'node',"chol", "state"] + list(range(73)))
+
+    u.select_atoms('resid 143').residues.resnames
+    dff = df.loc[df['node'].isin([143+337*i for i in range(4)])] 
+    dff.to_csv('G178_nodegraphlet.csv')
+    # G4, 5,15!!,16,19,
+
+
+    # load mda universe. just for getting residue names
+    #u = mda.Universe(f'{r}-30-closed/{r}-0-start-membrane-3JYC.pdb',f'{r}-30-closed/{r}-0-1000-3JYC.xtc')
+    u = mda.Universe(f'R1-30-closed/R1-0-start-membrane-3JYC.pdb',f'R1-30-closed/R1-0-1000-3JYC.xtc')
+
     dff = df.loc[df['node'].isin([228+337*i for i in range(4)])] 
     dff['node'] = dff['node'] + 1
     dff
     dff.to_csv('L264_nodegraphlet.csv')
     return
+
