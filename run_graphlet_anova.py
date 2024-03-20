@@ -39,16 +39,21 @@ def main():
         node_df = node_df.reset_index()
 
         #doing PCA to avoid correlated variables
+        node_df.const.value_counts()
         x = node_df.loc[:, gcols].values
         y = node_df.loc[:,['chol']].values
         x = StandardScaler().fit_transform(x)
         pca = PCA()
         principalComponents = pca.fit_transform(x)
         evr = pca.explained_variance_ratio_.cumsum()
+        nPCs = 0
         for i,j in enumerate(evr):
             if j > 0.99:
                 nPCs = i + 1
                 break
+        if nPCs == 0:
+            print(f'no variance. skipping node {node}')
+            continue
         pca = PCA(n_components=nPCs)
         principalComponents = pca.fit_transform(x)
         principalDf = pd.DataFrame(data = principalComponents
@@ -83,8 +88,8 @@ def build_model(finalDf,node,nPCs):
     
     # building the model and fitting the data 
     try:
-        log_reg = sm.Logit(y_train, X_train).fit(maxiter=100) 
-    except np.linalg.LinAlgError: # I think this happens when there is perfect correlation?
+        log_reg = sm.Logit(y_train, X_train).fit(maxiter=100,) 
+    except np.linalg.LinAlgError: # I think this happens when there is perfect correlation or things are constant.
         print(f'node {node}: singular matrix error')
         return 0
 
