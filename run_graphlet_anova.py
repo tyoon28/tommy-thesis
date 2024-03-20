@@ -1,3 +1,5 @@
+# not an ANOVA anymore really.
+# fit a logistic model to each node and print out p values
 from graphlets import *
 import warnings
 from scipy.stats import f_oneway
@@ -11,38 +13,81 @@ from statsmodels.formula.api import ols
 def main():
     ldirs = [f'../orca/output/{r}-{c}-closed' for r in ['R1','R2','R3'] for c in ['15','30']]
     # load data from uniform slices into df from multiple replicates
-    gdds = []
-    for d in ldirs:
-        for f in os.listdir(d):
-            if f == '.DS_Store': continue
-            if '-0-' in f: continue # skip the one with the burn in time
-            r = f.split('-')[0]
-            gdd = graphlet_degree_distribution(os.path.join(d, f))
-
-            if '30' in f: chol = 30
+    # gets graphlet orbits for each node. slices of 250
+    rows = []
+    for d in tqdm.tqdm(ldirs):
+        for fn in os.listdir(d):
+            if fn == '.DS_Store': continue
+            if '-0-' in fn: continue # skip the one with the burn in time
+            r = fn.split('-')[0]
+            if '30' in fn: chol = 30
             else: chol = 15
-            if 'closed' in f: state = 'closed'
+            if 'closed' in fn: state = 'closed'
             else: state = 'open'
-            gdds.append([f,chol,state,r] + list(gdd))
+            with open(os.path.join(d, fn)) as f:
+                for i,line in enumerate(f): # count resid. does it start at 0...?
+                    l = line.split(' ')
+                    rows.append([fn,i,chol,state,r] + l)
 
     gcols = ['g' + str(graphlet) for graphlet in range(73)]
-    df = pd.DataFrame(gdds,columns=["name", "chol", "state",'replicate'] +gcols)
-    # ANOVA test for each coordinate of vector.
-    # don't want to use MANOVA because want to evaluate each graphlet separately
+    df = pd.DataFrame(rows,columns=["name", "node","chol", "state",'replicate'] +gcols)
     
-    keys = []
-    tables = []
-    for g in range(73):
-        model = ols(f'g{g} ~ chol', data=df).fit()
-        anova_table = sm.stats.anova_lm(model, typ=2)
+    goodnodes = []
+    for node in df["node"].unique():
+        node_df = df.loc[df['node'] == node]
+        node_df = node_df.reset_index()
 
-        keys.append(g)
-        tables.append(anova_table)
+        #doing PCA to avoid correlated variables
+        x = node_df.loc[:, gcols].values
+        y = node_df.loc[:,['chol']].values
+        x = StandardScaler().fit_transform(x)
+        pca = PCA()
+        principalComponents = pca.fit_transform(x)
+        evr = pca.explained_variance_ratio_.cumsum()
+        for i,j in enumerate(evr):
+            if j > 0.99:
+                nPCs = i + 1
+                break
+        pca = PCA(n_components=nPCs)
+        principalComponents = pca.fit_transform(x)
+        principalDf = pd.DataFrame(data = principalComponents
+                , columns = [f'PC{x}' for x in range(1,nPCs+1)])
+        finalDf = pd.concat([principalDf, node_df[['chol','name','node']]], axis = 1)
 
-    df_anova = pd.concat(tables, keys=keys, axis=0)
-    df_anova.to_csv('df_anova.csv',index=False)
+        modelP = build_model(node_df,finalDf,nPCs)
+        if modelP < 0.05: goodnodes.append(node)
+        print(f'node {node}: P = {modelP}, nPCs = {nPCs}')
+    print(f'good nodes: {", ".join(goodnodes)}')
 
-    # do for whole network and for nodes.
+    return
+
+
+
+# for each node: is this graphlet vector different from that one?
+# build a model for each node. get p value of the model.
+    
+def build_model(finalDf,node,nPCs):
+    columns = [f'PC{x}' for x in range(1,nPCs+1)]
+    X = finalDf[columns]
+    y = pd.get_dummies(finalDf['chol'])[15] # True means 15 mol%, false means 30.
+    
+    X_train, X_test, y_train, y_test = train_test_split(X,y , 
+                                    random_state=104,  
+                                    train_size=0.8,  
+                                    shuffle=True) 
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    
+    # building the model and fitting the data 
+    log_reg = sm.Logit(y_train, X_train).fit(maxiter=100) 
+    log_reg.pvalues
+    pvalue = log_reg.llr_pvalue # p value for the whole model
+
+    return pvalue
+
+
 
 
 
