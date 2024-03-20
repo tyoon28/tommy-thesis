@@ -41,7 +41,6 @@ def main():
         node_df = node_df.reset_index()
 
         #doing PCA to avoid correlated variables
-        node_df.const.value_counts()
         x = node_df.loc[:, gcols].values
         y = node_df.loc[:,['chol']].values
         x = StandardScaler().fit_transform(x)
