@@ -34,6 +34,7 @@ def main():
     
     goodnodes = []
     for node in df["node"].unique():
+        print(node)
         node_df = df.loc[df['node'] == node]
         node_df = node_df.reset_index()
 
@@ -54,7 +55,7 @@ def main():
                 , columns = [f'PC{x}' for x in range(1,nPCs+1)])
         finalDf = pd.concat([principalDf, node_df[['chol','name','node']]], axis = 1)
 
-        modelP = build_model(node_df,finalDf,nPCs)
+        modelP = build_model(finalDf,node,nPCs)
         if modelP < 0.05: goodnodes.append(node)
         print(f'node {node}: P = {modelP}, nPCs = {nPCs}')
     print(f'good nodes: {", ".join(goodnodes)}')
@@ -81,8 +82,12 @@ def build_model(finalDf,node,nPCs):
 
     
     # building the model and fitting the data 
-    log_reg = sm.Logit(y_train, X_train).fit(maxiter=100) 
-    log_reg.pvalues
+    try:
+        log_reg = sm.Logit(y_train, X_train).fit(maxiter=100) 
+    except np.linalg.LinAlgError: # I think this happens when there is perfect correlation?
+        print(f'node {node}: singular matrix error')
+        return 0
+
     pvalue = log_reg.llr_pvalue # p value for the whole model
 
     return pvalue
