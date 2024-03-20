@@ -72,7 +72,7 @@ def main():
     print(f'no variance nodes: {", ".join(novar)}')
     print(f'err nodes: {", ".join(err)}')
 
-    print(f'none: {1348-len(goodnodes)+len(novar)+len(err)}')
+    print(f'none: {1348-(len(goodnodes)+len(novar)+len(err))}')
 
     return
 
