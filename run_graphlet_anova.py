@@ -26,7 +26,7 @@ def main():
             else: state = 'open'
             with open(os.path.join(d, fn)) as f:
                 for i,line in enumerate(f): # count resid. does it start at 0...?
-                    l = line.split(' ')
+                    l = list(map(int,line.split(' ')))
                     rows.append([fn,i,chol,state,r] + l)
 
     gcols = ['g' + str(graphlet) for graphlet in range(73)]
@@ -39,6 +39,7 @@ def main():
         print(node)
         node_df = df.loc[df['node'] == node]
         node_df = node_df.reset_index()
+
 
         #doing PCA to avoid correlated variables
         x = node_df.loc[:, gcols].values
@@ -83,6 +84,7 @@ def main():
     
 def build_model(finalDf,node,nPCs):
     columns = [f'PC{x}' for x in range(1,nPCs+1)]
+
     X = finalDf[columns]
     y = pd.get_dummies(finalDf['chol'])[15] # True means 15 mol%, false means 30.
     
@@ -90,20 +92,28 @@ def build_model(finalDf,node,nPCs):
                                     random_state=104,  
                                     train_size=0.8,  
                                     shuffle=True) 
+
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
-
+    X_train = sm.add_constant(X_train)
+    X_test = sm.add_constant(X_test)
     
     # building the model and fitting the data 
     try:
-        log_reg = sm.Logit(y_train, X_train).fit(maxiter=100,) 
+        log_reg = sm.Logit(y_train, X_train).fit_regularized() # nan p values mean they are nothing.
     except np.linalg.LinAlgError: # I think this happens when there is perfect correlation or things are constant.
         print(f'node {node}: singular matrix error')
         return 0
+    for i in log_reg.pvalues.dropna()[1:]:
+        if i < 0.05:
+            return i
+    
+    
 
     pvalue = log_reg.llr_pvalue # p value for the whole model
 
+    return 1
     return pvalue
 
 
