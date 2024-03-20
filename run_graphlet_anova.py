@@ -78,6 +78,7 @@ def main():
     print(f'err nodes: {", ".join(err)}')
 
     print(f'none: {1348-(len(goodnodes)+len(novar)+len(err))}')
+    print(accuracy.sorted())
 
     return
 
