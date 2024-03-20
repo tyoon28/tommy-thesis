@@ -5,6 +5,8 @@ import warnings
 from scipy.stats import f_oneway
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
+from sklearn.metrics import (confusion_matrix,accuracy_score) 
+
 
 
 
@@ -35,6 +37,7 @@ def main():
     goodnodes = []
     novar = []
     err = []
+    accuracy = []
     for node in df["node"].unique():
         print(node)
         node_df = df.loc[df['node'] == node]
@@ -64,6 +67,7 @@ def main():
         finalDf = pd.concat([principalDf, node_df[['chol','name','node']]], axis = 1)
 
         modelP = build_model(finalDf,node,nPCs)
+        accuracy.append(modelP)
 
         if modelP == 0: err.append(str(node))
         elif modelP < 0.05: goodnodes.append(str(node))
@@ -90,7 +94,7 @@ def build_model(finalDf,node,nPCs):
     
     X_train, X_test, y_train, y_test = train_test_split(X,y , 
                                     random_state=104,  
-                                    train_size=0.8,  
+                                    train_size=0.8,
                                     shuffle=True) 
 
     scaler = StandardScaler()
@@ -105,12 +109,17 @@ def build_model(finalDf,node,nPCs):
     except np.linalg.LinAlgError: # I think this happens when there is perfect correlation or things are constant.
         print(f'node {node}: singular matrix error')
         return 0
+    
+    y_pred = log_reg.predict(X_test)
+    preds = list(map(round, y_pred)) 
+    return accuracy_score(y_test, preds)
+
+
+
     for i in log_reg.pvalues.dropna()[1:]:
         if i < 0.05:
             return i
     
-    
-
     pvalue = log_reg.llr_pvalue # p value for the whole model
 
     return 1
