@@ -69,6 +69,10 @@ def main():
         
         print(f'node {node}: P = {modelP}, nPCs = {nPCs}')
     print(f'good nodes: {", ".join(goodnodes)}')
+    print(f'no variance nodes: {", ".join(novar)}')
+    print(f'err nodes: {", ".join(err)}')
+
+    print(f'none: {1348-len(goodnodes)+len(novar)+len(err)}')
 
     return
 
