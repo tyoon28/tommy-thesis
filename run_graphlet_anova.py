@@ -33,6 +33,8 @@ def main():
     df = pd.DataFrame(rows,columns=["name", "node","chol", "state",'replicate'] +gcols)
     
     goodnodes = []
+    novar = []
+    err = []
     for node in df["node"].unique():
         print(node)
         node_df = df.loc[df['node'] == node]
@@ -53,6 +55,7 @@ def main():
                 break
         if nPCs == 0:
             print(f'no variance. skipping node {node}')
+            novar.append(str(node))
             continue
         pca = PCA(n_components=nPCs)
         principalComponents = pca.fit_transform(x)
@@ -61,7 +64,10 @@ def main():
         finalDf = pd.concat([principalDf, node_df[['chol','name','node']]], axis = 1)
 
         modelP = build_model(finalDf,node,nPCs)
-        if modelP < 0.05: goodnodes.append(node)
+
+        if modelP == 0: err.append(str(node))
+        elif modelP < 0.05: goodnodes.append(str(node))
+        
         print(f'node {node}: P = {modelP}, nPCs = {nPCs}')
     print(f'good nodes: {", ".join(goodnodes)}')
 
