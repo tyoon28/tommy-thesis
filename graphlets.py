@@ -25,32 +25,6 @@ one_letter ={'VAL':'V', 'ILE':'I', 'LEU':'L', 'GLU':'E', 'GLN':'Q', \
 'ARG':'R', 'LYS':'K', 'SER':'S', 'THR':'T', 'MET':'M', 'ALA':'A',    \
 'GLY':'G', 'PRO':'P', 'CYS':'C'}
 
-def output_consensus_graph(u,filename,s=0,d=None,threshold = 0.9,**kwargs):
-    res = u.select_atoms('not resname CHOL and not resname POPC')
-    lenr = len(res.residues)
-    edgesmat = np.zeros(shape=(lenr,lenr))
-
-    for ts in u.trajectory[s:d]:
-        frame = u.trajectory.frame
-        r = res.atoms.center_of_mass(compound='residues')
-        mat = distances.contact_matrix(r, cutoff=6)
-        np.fill_diagonal(mat, 0)
-        edgesmat += mat
-
-    
-    t = len(u.trajectory[s:d]) * threshold
-    G = nx.from_numpy_array((edgesmat >= t))
-
-    #make folder if doesn't exist
-    p = os.path.dirname(filename)
-    Path(p).mkdir(parents=True, exist_ok=True)
-
-    with open(filename, 'w') as f:
-        f.write(f'{len(G.nodes)} {len(G.edges)}\n') # for orca input
-        for line in nx.generate_edgelist(G,delimiter = ' ',data=False):
-            linesp = line.split()
-            f.write(f'{linesp[0]} {linesp[1]}\n')
-    return
 
 def output_sampled_graphs(u,numgraphs,basename,lengraph=1000):
     starts = random.sample(range(len(u.trajectory)-lengraph), numgraphs)

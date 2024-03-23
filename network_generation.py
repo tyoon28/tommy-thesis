@@ -8,6 +8,33 @@ import dynetx as dn
 
 # suppress some MDAnalysis warnings about PSF files
 warnings.filterwarnings('ignore')
+def output_consensus_graph(u,filename,s=0,d=None,threshold = 0.9,**kwargs):
+    res = u.select_atoms('not resname CHOL and not resname POPC')
+    lenr = len(res.residues)
+    edgesmat = np.zeros(shape=(lenr,lenr))
+
+    for ts in u.trajectory[s:d]:
+        frame = u.trajectory.frame
+        r = res.atoms.center_of_mass(compound='residues')
+        mat = distances.contact_matrix(r, cutoff=6)
+        np.fill_diagonal(mat, 0)
+        edgesmat += mat
+
+    
+    t = len(u.trajectory[s:d]) * threshold
+    G = nx.from_numpy_array((edgesmat >= t))
+
+    #make folder if doesn't exist
+    p = os.path.dirname(filename)
+    Path(p).mkdir(parents=True, exist_ok=True)
+
+    with open(filename, 'w') as f:
+        f.write(f'{len(G.nodes)} {len(G.edges)}\n') # for orca input
+        for line in nx.generate_edgelist(G,delimiter = ' ',data=False):
+            linesp = line.split()
+            f.write(f'{linesp[0]} {linesp[1]}\n')
+    return
+
 
 def network_1_frame(u):
     '''protein contact network from 1 frame.'''

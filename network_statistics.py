@@ -514,5 +514,5 @@ def network_centralities(u):
 
 
 def shortest_path(G,n1,n2):
-    
+
     return

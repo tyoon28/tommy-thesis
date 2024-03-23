@@ -1,4 +1,5 @@
 from network_statistics import *
+from network_generation import *
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA

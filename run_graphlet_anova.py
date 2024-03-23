@@ -53,7 +53,7 @@ def main():
         evr = pca.explained_variance_ratio_.cumsum()
         nPCs = 0
         for i,j in enumerate(evr):
-            if j > 0.99:
+            if j > 0.90:
                 nPCs = i + 1
                 break
         if nPCs == 0:
@@ -86,12 +86,20 @@ def main():
 
 # for each node: is this graphlet vector different from that one?
 # build a model for each node. get p value of the model.
-    
+# look at example node that we know changes a lot
+# remove collinear variables
+# simulate data as sanity check
+# check overfitting
+# look at first 10
+# check how many PCs
+# eigenvalue plot to find ideal number of PCs
+# nonlinear predictive models
+
 def build_model(finalDf,node,nPCs):
     columns = [f'PC{x}' for x in range(1,nPCs+1)]
 
     X = finalDf[columns]
-    y = pd.get_dummies(finalDf['chol'])[15] # True means 15 mol%, false means 30.
+    y = pd.get_dummies(finalDf['chol'])[15].astype(int) # True means 15 mol%, false means 30.
     
     X_train, X_test, y_train, y_test = train_test_split(X,y , 
                                     random_state=104,  
@@ -99,11 +107,14 @@ def build_model(finalDf,node,nPCs):
                                     shuffle=True) 
 
     scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
+    # X_train = scaler.fit_transform(X_train)
+    # X_test = scaler.transform(X_test)
     X_train = sm.add_constant(X_train)
     X_test = sm.add_constant(X_test)
-    
+    X_train = X_train.reset_index(drop=True)
+    y_train = y_train.reset_index(drop=True)
+
+
     # building the model and fitting the data 
     try:
         log_reg = sm.Logit(y_train, X_train).fit_regularized() # nan p values mean they are nothing.
