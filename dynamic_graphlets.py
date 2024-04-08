@@ -220,6 +220,7 @@ def dynamic_PCA_nodes(r):
     d = '../dynamic_graphlets/output'
     for fn in tqdm.tqdm(os.listdir(d)):
         if fn == '.DS_Store': continue
+        if 'dgdv' not in fn: continue
         if r != 'all':
             if r not in fn: continue
         if '-15-' in fn: 
