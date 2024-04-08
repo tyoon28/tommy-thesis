@@ -1,6 +1,7 @@
 from dynamic_graphlets import *
 
 def main():
+    gotnames = False
     gdds = []
     ldirs = ['../dynamic_graphlets/output/']
     for d in ldirs:
