@@ -4,6 +4,7 @@ def main():
     gotnames = False
     gdds = []
     ldirs = ['../dynamic_graphlets/output/']
+    print('starting analysis of all')
     for d in ldirs:
         for f in os.listdir(d):
             if f == '.DS_Store': continue
@@ -20,7 +21,7 @@ def main():
             elif 'R2' in f: r = 2
             elif 'R3' in f: r = 3
             gdds.append([f,chol,state,r] + list(gdd))
-    
+    print('making df')
     df = pd.DataFrame(gdds,columns=["name", "chol", "state","replicate"] + graphlet_names)
     # https://builtin.com/machine-learning/pca-in-python
     features = graphlet_names
@@ -34,7 +35,9 @@ def main():
     finalDf = pd.concat([principalDf, df[['chol','name']]], axis = 1)
     finalDf['start'] = finalDf['name'].str.split('-').str[3]
     finalDf['start'] = finalDf['start'].apply(int)
+    print('done w pca')
     plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-all')
+    print('done w all')
 
     for r in ['R1','R2','R3']:
         print(f'running PCA whole for {r}')
