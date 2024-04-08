@@ -235,7 +235,7 @@ def dynamic_PCA_nodes(r):
         # sometimes a node has no edges through the length of the window.
         # so have to insert a row with zero.
         except ValueError:
-            notseen = lookformissing(os.path.join(d, fn))
+            notseen = lookformissing(fn)
             x = np.loadtxt(os.path.join(d, fn),dtype=int)
             for i in notseen:
                 x = np.insert(x,int(i),np.zeros(nfeatures),0)
@@ -299,11 +299,7 @@ def dynamic_PCA_nodes(r):
 
 
 def lookformissing(fn):
-    print()
-    print(fn)
     f = fn.split('.')[0]
-    print(fn.split('.'))
-    print(f)
     fn = f'../dynamic_graphlets/input/{f}.in'
     seen = []
     with open(fn) as f:
