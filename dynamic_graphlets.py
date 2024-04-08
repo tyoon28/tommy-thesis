@@ -205,7 +205,10 @@ def dynamic_PCA_nodes(r):
     #outdirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-uniform','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-uniform']
     nfeatures = 3728 # length of vector
     # load mda universe. just for getting residue names and n residues
-    u = mda.Universe(f'{r}-30-closed/{r}-0-start-membrane-3JYC.pdb',f'{r}-30-closed/{r}-0-1000-3JYC.xtc')
+    if r != 'all':
+        u = mda.Universe(f'{r}-30-closed/{r}-0-start-membrane-3JYC.pdb',f'{r}-30-closed/{r}-0-1000-3JYC.xtc')
+    else:
+        u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb','R1-30-closed/R1-0-1000-3JYC.xtc')
     nres = len(u.select_atoms('not resname CHOL and not resname POPC').residues)
 
     rows = np.zeros((nres*2,nfeatures+2))
