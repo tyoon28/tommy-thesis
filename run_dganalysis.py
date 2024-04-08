@@ -18,16 +18,15 @@ def main():
             else: chol = 15
             if 'closed' in f: state = 'closed'
             else: state = 'open'
-            if 'R1' in f: r = 1
-            elif 'R2' in f: r = 2
-            elif 'R3' in f: r = 3
+            if 'R1' in f: r = 'R1'
+            elif 'R2' in f: r = 'R2'
+            elif 'R3' in f: r = 'R3'
             gdds.append([f,chol,state,r] + list(gdd))
     print('making df')
     df = pd.DataFrame(gdds,columns=["name", "chol", "state","replicate"] + graphlet_names)
     # https://builtin.com/machine-learning/pca-in-python
     features = graphlet_names
     x = df.loc[:, features].values
-    print(x.shape)
     y = df.loc[:,['chol']].values
     x = StandardScaler().fit_transform(x)
     pca = PCA(n_components = 4)
