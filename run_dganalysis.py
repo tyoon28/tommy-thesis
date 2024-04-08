@@ -35,6 +35,7 @@ def main():
     for i,j in enumerate(evr):
         if j > 0.99:
             nPCs = i + 1
+    print(f'using {nPCs} components')
     pca = PCA(n_components=nPCs)
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
@@ -59,10 +60,11 @@ def main():
         for i,j in enumerate(evr):
             if j > 0.99:
                 nPCs = i + 1
+        print(f'using {nPCs} components')
         pca = PCA(n_components=nPCs)
         principalComponents = pca.fit_transform(x)
         principalDf = pd.DataFrame(data = principalComponents
-                , columns = [f'PC{x}' for x in range(1,1,nPCs+1)])
+                , columns = [f'PC{x}' for x in range(1,nPCs+1)])
         finalDf = pd.concat([principalDf, d[['chol','name']]], axis = 1)
         plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn=f'dyngraphlets-{r}')
         print(f'done with PCA whole for {r}')
