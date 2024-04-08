@@ -35,6 +35,7 @@ def main():
     for i,j in enumerate(evr):
         if j > 0.99:
             nPCs = i + 1
+            break
     print(f'using {nPCs} components')
     pca = PCA(n_components=nPCs)
     principalComponents = pca.fit_transform(x)
