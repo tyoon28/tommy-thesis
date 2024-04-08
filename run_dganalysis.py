@@ -38,7 +38,7 @@ def main():
     pca = PCA(n_components=nPCs)
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
-             , columns = [f'PC{x}' for x in range(1,5)])
+             , columns = [f'PC{x}' for x in range(1,nPCs+1)])
     finalDf = pd.concat([principalDf, df[['chol','name']]], axis = 1)
     finalDf['start'] = finalDf['name'].str.split('-').str[3]
     finalDf['start'] = finalDf['start'].apply(int)
@@ -62,7 +62,7 @@ def main():
         pca = PCA(n_components=nPCs)
         principalComponents = pca.fit_transform(x)
         principalDf = pd.DataFrame(data = principalComponents
-                , columns = [f'PC{x}' for x in range(1,5)])
+                , columns = [f'PC{x}' for x in range(1,1,nPCs+1)])
         finalDf = pd.concat([principalDf, d[['chol','name']]], axis = 1)
         plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn=f'dyngraphlets-{r}')
         print(f'done with PCA whole for {r}')
