@@ -50,6 +50,7 @@ def main():
     for r in ['R1','R2','R3']:
         print(f'running PCA whole for {r}')
         d = df.loc[df['replicate'] == r]
+        print(len(d))
         features = graphlet_names
         x = d.loc[:, features].values
         y = d.loc[:,['chol']].values
@@ -60,6 +61,7 @@ def main():
         for i,j in enumerate(evr):
             if j > 0.99:
                 nPCs = i + 1
+        print(evr)
         print(f'using {nPCs} components')
         pca = PCA(n_components=nPCs)
         principalComponents = pca.fit_transform(x)

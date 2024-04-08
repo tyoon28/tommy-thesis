@@ -204,6 +204,7 @@ def dynamic_PCA_nodes(r):
     outdirs = [f'/Users/Tommy/Desktop/thesis/dynamic_graphlets/output/{r}-15-closed-len50/dgdv',f'/Users/Tommy/Desktop/thesis/dynamic_graphlets/output/{r}-30-closed-len50/dgdv']
     #outdirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-uniform','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-uniform']
     nfeatures = 3728 # length of vector
+    plt.clf()
     # load mda universe. just for getting residue names and n residues
     if r != 'all':
         u = mda.Universe(f'{r}-30-closed/{r}-0-start-membrane-3JYC.pdb',f'{r}-30-closed/{r}-0-1000-3JYC.xtc')
@@ -289,6 +290,7 @@ def dynamic_PCA_nodes(r):
     #         ax.annotate(label, xy=(p.get_x(), p.get_height() + 0.1), fontsize=4)
     plt.tight_layout()
     plt.savefig(f'{r}-dyn-nodemovement.png')
+    plt.clf()
 
 
 
