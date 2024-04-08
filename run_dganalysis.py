@@ -64,8 +64,8 @@ def main():
         nPCs = 2
         print(f'using {nPCs} components')
         pca = PCA(n_components=nPCs)
-        print(pca.explained_variance_ratio_.cumsum())
         principalComponents = pca.fit_transform(x)
+        print(pca.explained_variance_ratio_.cumsum())
         principalDf = pd.DataFrame(data = principalComponents
                 , columns = [f'PC{x}' for x in range(1,nPCs+1)])
         finalDf = pd.concat([principalDf, d[['chol','name']]], axis = 1)
