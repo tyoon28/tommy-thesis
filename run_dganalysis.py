@@ -8,6 +8,7 @@ def main():
     for d in ldirs:
         for f in os.listdir(d):
             if f == '.DS_Store': continue
+            if 'dcounts' not in f: continue
             if not gotnames: 
                 graphlet_names = dyn_graphlet_degree_distribution(os.path.join(d, f),get_graphlet_names = True)
                 gotnames = True
