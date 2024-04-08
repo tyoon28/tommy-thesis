@@ -6,13 +6,15 @@ from scipy.stats import f_oneway
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
 from sklearn.metrics import (confusion_matrix,accuracy_score) 
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import roc_curve, roc_auc_score 
+from sklearn.model_selection import KFold, cross_val_score
 
 
 
 
 
-
-def main():
+def main(remote=False):
     ldirs = [f'../orca/output/{r}-{c}-closed' for r in ['R1','R2','R3'] for c in ['15','30']]
     # load data from uniform slices into df from multiple replicates
     # gets graphlet orbits for each node. slices of 250
@@ -37,9 +39,11 @@ def main():
     goodnodes = []
     novar = []
     err = []
-    accuracy = []
-    for node in df["node"].unique():
-        print(node)
+    accuracy = {}
+    randaccuracy = []
+    rocs = {}
+    cvs = {}
+    for node in tqdm.tqdm(df["node"].unique()):
         node_df = df.loc[df['node'] == node]
         node_df = node_df.reset_index()
 
@@ -66,20 +70,36 @@ def main():
                 , columns = [f'PC{x}' for x in range(1,nPCs+1)])
         finalDf = pd.concat([principalDf, node_df[['chol','name','node']]], axis = 1)
 
-        modelP = build_model(finalDf,node,nPCs)
-        accuracy.append(modelP)
+        # generate random data
+        randDf = pd.DataFrame([np.random.normal(size=nPCs) for x in range(len(node_df))], 
+                              columns = [f'PC{x}' for x in range(1,nPCs+1)])
+        randDf['chol'] = finalDf['chol']
+        # randDf = df.merge(pd.DataFrame(index=np.random.randint(2690608, size=len(finalDf))), left_index=True, right_index=True, how='right')
 
-        if modelP == 0: err.append(str(node))
-        elif modelP < 0.05: goodnodes.append(str(node))
+        acc,roc,cv = build_model(finalDf,node,nPCs)
+        rocs[node] = roc
+        cvs[node] = cv
+
+        acc_rand,roc, cv = build_model(randDf,node,nPCs)
+        accuracy[node] = acc
+        randaccuracy.append(acc_rand)
+    if not remote:
+        print(sorted(accuracy)[-10:])
+        print(sorted(rocs)[-10:])
+        plt.scatter(accuracy,rocs)
+        plt.xlabel('accuracy')
+        plt.ylabel('AUC')
+        plt.show()
+        x = list(range(len(accuracy)))
+
+        plt.plot(x,sorted(accuracy))
+        plt.plot(x,sorted(randaccuracy))
+        plt.legend()
+    # find out whoch nodes have highest accuracy
         
-        print(f'node {node}: P = {modelP}, nPCs = {nPCs}')
-    print(f'good nodes: {", ".join(goodnodes)}')
-    print(f'no variance nodes: {", ".join(novar)}')
-    print(f'err nodes: {", ".join(err)}')
-
-    print(f'none: {1348-(len(goodnodes)+len(novar)+len(err))}')
-    print(accuracy.sorted())
-
+    # output cxc file
+    u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb','R1-30-closed/R1-0-1000-3JYC.xtc')
+    dd_to_csv(accuracy,'rf_accuracy_allR',u)
     return
 
 
@@ -95,6 +115,11 @@ def main():
 # eigenvalue plot to find ideal number of PCs
 # nonlinear predictive models
 
+# dff = pd.DataFrame([[x,2*x,x+15,x-3,np.random.normal()] for x in np.random.normal(size=1996)])
+# X = np.concatenate(np.random.normal(size = 1000),np.random.normal(loc=10,size=1000))
+
+
+
 def build_model(finalDf,node,nPCs):
     columns = [f'PC{x}' for x in range(1,nPCs+1)]
 
@@ -109,18 +134,55 @@ def build_model(finalDf,node,nPCs):
     scaler = StandardScaler()
     # X_train = scaler.fit_transform(X_train)
     # X_test = scaler.transform(X_test)
-    X_train = sm.add_constant(X_train)
-    X_test = sm.add_constant(X_test)
+    # X_train = sm.add_constant(X_train)
+    # X_test = sm.add_constant(X_test)
     X_train = X_train.reset_index(drop=True)
-    y_train = y_train.reset_index(drop=True)
+    y_train = y_train.reset_index(drop=True)    
 
 
     # building the model and fitting the data 
     try:
-        log_reg = sm.Logit(y_train, X_train).fit_regularized() # nan p values mean they are nothing.
+        #log_reg = sm.Logit(y_train, X_train).fit_regularized() # nan p values mean they are nothing.
+
+        rf = RandomForestRegressor(n_estimators = 500)
+        # Train the model on training data
+        rf.fit(X_train, y_train)
+        probs = rf.predict(X_test)
+        preds = np.round(probs)
+        # Calculate the absolute errors
+        acc = (y_test == preds).sum() / len(preds)
+        TP = ((preds == 1) & (y_test == 1)).sum()
+        FP = ((preds == 1) & (y_test == 0)).sum()
+        precision = TP / (TP+FP)
+
+        fpr, tpr, thresholds = roc_curve(y_test, probs, pos_label=1)
+        roc_auc = roc_auc_score(y_test, probs) 
+        roc_auc
+
+        # CV:
+        k_folds = KFold(n_splits = 5)
+
+        scores = cross_val_score(rf, X, y, cv = k_folds)
+
+
+        # plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % roc_auc) 
+        # # roc curve for tpr = fpr  
+        # plt.plot([0, 1], [0, 1], 'k--', label='Random classifier') 
+        # plt.xlabel('False Positive Rate') 
+        # plt.ylabel('True Positive Rate') 
+        # plt.title('ROC Curve') 
+        # plt.legend(loc="lower right") 
+        # plt.show()
+
+
+
+        return acc, roc_auc,scores.mean()
+
     except np.linalg.LinAlgError: # I think this happens when there is perfect correlation or things are constant.
         print(f'node {node}: singular matrix error')
         return 0
+    
+    
     
     y_pred = log_reg.predict(X_test)
     preds = list(map(round, y_pred)) 

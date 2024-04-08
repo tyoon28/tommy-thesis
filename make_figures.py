@@ -1,4 +1,6 @@
 from graphlets import *
+from itertools import combinations
+
 
 def main():
     contact_threshold = 6
@@ -20,6 +22,7 @@ def main():
         y = np.zeros(len(u.trajectory)-20)
         y2=np.zeros(len(u.trajectory)-20)
         # count cholesterols occupying
+        # have lines in background, thick line for average of the replicates, and both conditions in same plot.
         for ts in tqdm.tqdm(u.trajectory[20:]):
             tim = u.trajectory.time
             t[u.trajectory.frame-20] = tim
@@ -59,7 +62,27 @@ def persistence():
 
         # for correlation values, try going through time and recording how many frames edges have in common.
         numedges = int(((lenp**2)-lenp)/2)
-        results = np.zeros((len(u.trajectory),numedges))
+
+        # matrix storing how many times edge i and edge j are there together or absent together
+        r = protein.atoms.center_of_mass(compound='residues')
+        mat = distances.contact_matrix(r, cutoff=6)
+        mm = mat[np.triu_indices(len(mat), k = 1)]
+        comp = np.zeros((len(mm),len(mm)))
+
+        results = np.zeros((numedges,numedges))
+        for ts in tqdm.tqdm(u.trajectory[20:]):
+            frame = u.trajectory.frame
+            r = protein.atoms.center_of_mass(compound='residues')
+            mat = distances.contact_matrix(r, cutoff=6)
+            np.fill_diagonal(mat, 0)
+
+            mm = mat[np.triu_indices(len(mat), k = 1)] # take upper triangle of contact array
+
+            comp += (mm == mm.reshape(len(mm),1))
+
+        # comp contains how many times each pair of edges is co-occurent
+        
+        
         print('setup done')
         edges = []
 
@@ -78,9 +101,48 @@ def persistence():
 
 
 
+
 def chol_contact():
     #cholesterol contacts tend to be short, with most lasitng X ns. longest contact is X ns.
     # lengths of interactions of binding sites vs with rest of protein
+
+    for r,c in [(i,j) for i in ['R1','R2','R3'] for j in ['15','30']]:
+        xtcs = []
+        for file in os.listdir(f'{r}-{c}-closed'):
+            if file.endswith('.xtc'):
+                xtcs.append(f'{r}-{c}-closed/'+file)
+        xtcs.sort(key=lambda x: int(x.split('-')[1]))
+        u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb',*xtcs)
+
+
+        rog = Cholesterol_contact(u)
+        rog.run(start=0,verbose=True)
+
+        all_interactions = [] # list of durations of all interactions
+        bs_vs_rest = [[],[]] # 0: durations of interactions that touch a binding site; 1: others
+        for c in rog.results:
+            for i in range(len(rog.results[c]['binding_events'])):
+                start,end = rog.results[c]['binding_events'][i]
+                dur = end-start
+
+                bound = rog.results[c]['binding_events_actual'][i]
+                if bound: ind = 0
+                else: ind = 1
+                bs_vs_rest[ind].append(dur)
+                all_interactions.append(dur)
+
+        # plot with color corresponding to replicate/cholesterol condition
+
+    # A) a histogram?
+    # B) a violinish plot with 2 x values - binding site and not
+    
+
+
+
+
+        
+
+
 
     pass
         

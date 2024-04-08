@@ -46,6 +46,8 @@ class Cholesterol_contact(AnalysisBase):
         # Called before iteration on the trajectory has begun.
         # Data structures can be set up at this time
         # get all cholesterol ids
+        self.b_sites = binding_sites('closed')
+        self.binding = {i:False for i in self.sterols.resids}
         self.sterols = self.ag.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
         self.protein = self.ag.select_atoms('not resname CHOL and not resname POPC').residues
         self.lenprotein = len(self.protein)
@@ -56,7 +58,7 @@ class Cholesterol_contact(AnalysisBase):
         self.currentinteractions = {i:[] for i in self.sterols.resids}
 
         for i in self.sterols.resids:
-            self.results[i] = {'contacts':[],'binding_events':[],'mostcontacts':0,'residuecontacts':[]}
+            self.results[i] = {'contacts':[],'binding_events':[],'mostcontacts':0,'residuecontacts':[],binding_events_actual:[]}
 
 
 
@@ -89,6 +91,11 @@ class Cholesterol_contact(AnalysisBase):
                 self.sterol_residuecontacts[resid] += np.sum(c)
                 self.currentinteractions[resid].append(frame)
 
+                # check if binding site
+                if np.any(c[self.b_sites]):
+                    self.binding[resid] = True
+
+
             else:
                 # end of interaction. store binding event and reset counters
                 if self.currentinteractions[resid]:
@@ -96,6 +103,8 @@ class Cholesterol_contact(AnalysisBase):
                     endint = self.currentinteractions[resid][-1]
                     self.results[resid]['binding_events'].append((startint,endint))
                     self.results[resid]['residuecontacts'].append(self.sterol_residuecontacts[resid])
+                    if self.binding[resid]: self.results[resid]['binding_events_actual'].append(True)
+                    else: self.results[resid]['binding_events_actual'].append(False)
                 
                 
                 if self.sterol_residuecontacts[resid] > self.results[resid]['mostcontacts']:

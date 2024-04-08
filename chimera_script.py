@@ -8,7 +8,10 @@ from matplotlib.pyplot import cm
 from network_generation import *
 import csv
 
-
+one_letter ={'VAL':'V', 'ILE':'I', 'LEU':'L', 'GLU':'E', 'GLN':'Q', \
+'ASP':'D', 'ASN':'N', 'HIS':'H', 'TRP':'W', 'PHE':'F', 'TYR':'Y',    \
+'ARG':'R', 'LYS':'K', 'SER':'S', 'THR':'T', 'MET':'M', 'ALA':'A',    \
+'GLY':'G', 'PRO':'P', 'CYS':'C'}
 
 # pdb_file = '/Users/Tommy/Desktop/thesis/tommy-thesis/R1-30-closed/R1-0-start-membrane-3JYC.pdb'
 
@@ -103,3 +106,28 @@ def MD_to_chimerax(s):
     else: chain = 'D'
     
     return f'#1/{chain}:{e + 35}'
+
+
+
+def MD_to_resid(s,u=None):
+    one_letter ={'VAL':'V', 'ILE':'I', 'LEU':'L', 'GLU':'E', 'GLN':'Q', \
+    'ASP':'D', 'ASN':'N', 'HIS':'H', 'TRP':'W', 'PHE':'F', 'TYR':'Y',    \
+    'ARG':'R', 'LYS':'K', 'SER':'S', 'THR':'T', 'MET':'M', 'ALA':'A',    \
+    'GLY':'G', 'PRO':'P', 'CYS':'C'}
+
+    if s%337 == 0:
+        e = 337
+    else: e = s%337
+    c = (s-1)//337 + 1
+    if u is not None:
+        res = one_letter[u.select_atoms(f'resid {s}').residues.resnames[0]]
+    else: res = ''
+
+    
+    
+    return res+str(e + 35)
+
+
+
+def u_to_top(u):
+    pass

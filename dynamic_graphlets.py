@@ -109,9 +109,12 @@ def dyngraphlets_cholesterol(u):
             else: chol = 15
             if 'closed' in f: state = 'closed'
             else: state = 'open'
-            gdds.append([f,chol,state] + list(gdd))
+            if 'R1' in f: r = 1
+            elif 'R2' in f: r = 2
+            elif 'R3' in f: r = 3
+            gdds.append([f,chol,state,r] + list(gdd))
     
-    df = pd.DataFrame(gdds,columns=["name", "chol", "state"] + graphlet_names)
+    df = pd.DataFrame(gdds,columns=["name", "chol", "state","replicate"] + graphlet_names)
     # https://builtin.com/machine-learning/pca-in-python
     features = graphlet_names
     x = df.loc[:, features].values
@@ -129,7 +132,7 @@ def dyngraphlets_cholesterol(u):
 
 
 
-def plot_PCA_dyn_gdd(finalDf,pca):
+def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None):
     # PLOTTING PCA. only for 15 and 30
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1) 
@@ -160,8 +163,12 @@ def plot_PCA_dyn_gdd(finalDf,pca):
     ax.grid()
     ax.yaxis.set_major_locator(AutoLocator())
     ax.xaxis.set_major_locator(AutoLocator())
-
-    plt.show()
+    
+    if remote:
+        plt.savefig(f'{fn}.png')
+    else:
+        plt.show()
+    return
 
 def PCA_logistic_selection(finalDf,pca):
     X = finalDf[[f'PC{x}' for x in range(1,5)]]
@@ -210,32 +217,32 @@ def dynamic_PCA_nodes(r):
         else: rows[i][1] = 30
         
     # make this np array with averages
-    for d in outdirs:
-        for fn in tqdm.tqdm(os.listdir(d)):
-            if fn == '.DS_Store': continue
-            if '-15-' in fn: 
-                start = 0
-                end = nres
-            else: 
-                start = nres
-                end = None
-            try:
-                rows[start:end, 2:] += np.loadtxt(os.path.join(d, fn),dtype=int)
-            
-            # sometimes a node has no edges through the length of the window.
-            # so have to insert a row with zero.
-            except ValueError:
-                notseen = lookformissing(os.path.join(d, fn))
-                x = np.loadtxt(os.path.join(d, fn),dtype=int)
-                for i in notseen:
-                    x = np.insert(x,int(i),np.zeros(nfeatures),0)
-                print(notseen)
-                rows[start:end, 2:] += x
+    d = '../dynamic_graphlets/output'
+    for fn in tqdm.tqdm(os.listdir(d)):
+        if fn == '.DS_Store': continue
+        if r != 'all':
+            if r not in fn: continue
+        if '-15-' in fn: 
+            start = 0
+            end = nres
+        else: 
+            start = nres
+            end = None
+        try:
+            rows[start:end, 2:] += np.loadtxt(os.path.join(d, fn),dtype=int)
+        
+        # sometimes a node has no edges through the length of the window.
+        # so have to insert a row with zero.
+        except ValueError:
+            notseen = lookformissing(os.path.join(d, fn))
+            x = np.loadtxt(os.path.join(d, fn),dtype=int)
+            for i in notseen:
+                x = np.insert(x,int(i),np.zeros(nfeatures),0)
+            print(notseen)
+            rows[start:end, 2:] += x
 
     
 
-    # huge for dynamic graphlets.....
-    # does not include channel state yet
     df = pd.DataFrame(rows,columns=['node',"chol"] + list(range(nfeatures)))
 
     
@@ -285,12 +292,14 @@ def dynamic_PCA_nodes(r):
 
     dd=d_s.to_dict()
     dd_to_csv(dd,f'{r}-dyn-nodepca',u)
+    color_by_centrality(dd,f'{r}-dyn-nocepca-color')
     
 
 
 
 def lookformissing(fn):
-    fn = '/Users/Tommy/Desktop/thesis/dynamic_graphlets/input/R1-15-length50/R1-15-closed-14281-14331.in'
+    f = fn.split('.')[0]
+    fn = f'../dynamic_graphlets/input/{f}.in'
     seen = []
     with open(fn) as f:
         for line in f:
