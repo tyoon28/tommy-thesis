@@ -27,6 +27,7 @@ def main():
     # https://builtin.com/machine-learning/pca-in-python
     features = graphlet_names
     x = df.loc[:, features].values
+    print(x.shape)
     y = df.loc[:,['chol']].values
     x = StandardScaler().fit_transform(x)
     pca = PCA(n_components = 4)
