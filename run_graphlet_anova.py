@@ -55,6 +55,7 @@ def main(remote=False):
         pca = PCA()
         principalComponents = pca.fit_transform(x)
         evr = pca.explained_variance_ratio_.cumsum()
+        print(evr)
         nPCs = 0
         for i,j in enumerate(evr):
             if j > 0.90:
