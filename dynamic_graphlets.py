@@ -260,14 +260,15 @@ def dynamic_PCA_nodes(r):
     x = StandardScaler().fit_transform(x)
 
     # pick # components
-    # pca = PCA()
-    # principalComponents = pca.fit_transform(x)
-    # evr = pca.explained_variance_ratio_.cumsum()
-    nPCs = 2
-    # for i,j in enumerate(evr):
-    #     if j > 0.99:
-    #         nPCs = i + 1
+    pca = PCA()
+    principalComponents = pca.fit_transform(x)
+    evr = pca.explained_variance_ratio_.cumsum()
+    for i,j in enumerate(evr):
+        if j > 0.99:
+            nPCs = i + 1
+            break
     pca = PCA(n_components=nPCs)
+    print(f'using {nPCs} components')
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents,
                                 columns = [f'PC{x}' for x in range(1,nPCs+1)])

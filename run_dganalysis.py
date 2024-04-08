@@ -55,15 +55,16 @@ def main():
         x = d.loc[:, features].values
         y = d.loc[:,['chol']].values
         x = StandardScaler().fit_transform(x)
-        pca = PCA()
-        principalComponents = pca.fit_transform(x)
-        evr = pca.explained_variance_ratio_.cumsum()
-        for i,j in enumerate(evr):
-            if j > 0.99:
-                nPCs = i + 1
-        print(evr)
+        # pca = PCA()
+        # principalComponents = pca.fit_transform(x)
+        # evr = pca.explained_variance_ratio_.cumsum()
+        # for i,j in enumerate(evr):
+        #     if j > 0.99:
+        #         nPCs = i + 1
+        nPCs = 2
         print(f'using {nPCs} components')
         pca = PCA(n_components=nPCs)
+        print(pca.explained_variance_ratio_.cumsum())
         principalComponents = pca.fit_transform(x)
         principalDf = pd.DataFrame(data = principalComponents
                 , columns = [f'PC{x}' for x in range(1,nPCs+1)])
