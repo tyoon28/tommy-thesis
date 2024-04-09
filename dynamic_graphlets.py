@@ -132,7 +132,7 @@ def dyngraphlets_cholesterol(u):
 
 
 
-def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None,PCs=('PC1','PC2')):
+def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None,PCs=('PC1','PC2'),colorby='chol'):
     # PLOTTING PCA. only for 15 and 30
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1) 
@@ -142,7 +142,7 @@ def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None,PCs=('PC1','PC2')):
     ax.set_ylabel(PCs[1], fontsize = 15)
     ax.set_title('PCA dynamic graphlet degree distribution', fontsize = 20)
 
-    targets = sorted(finalDf['chol'].unique())
+    targets = sorted(finalDf[colorby].unique())
     color = iter(cm.rainbow(np.linspace(0, 1, len(targets))))
 
 
@@ -151,7 +151,7 @@ def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None,PCs=('PC1','PC2')):
     #             , c = 'r')
     x,y = PCs
     for target in targets:
-        indicesToKeep = finalDf['chol'] == target
+        indicesToKeep = finalDf[colorby] == target
         if len(indicesToKeep) > 10:
             c = next(color)
             

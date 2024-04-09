@@ -47,6 +47,7 @@ def main():
     print('done w pca')
     pcpair =PCA_logistic_selection(finalDf,pca,nPCs)
     plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-all',PCs=pcpair)
+    plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-colorbyrep',PCs=pcpair,colorby='replicate')
     
 
     print('done w all')
