@@ -191,7 +191,9 @@ def PCA_logistic_selection(finalDf,pca):
     feature_importance = pd.DataFrame({'Feature': X.columns, 'Importance': np.abs(coefficients)})
     feature_importance = feature_importance.sort_values('Importance', ascending=True)
     feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
-    plt.show()
+    plt.savefig(f'varimportance.png')
+    plt.clf()
+    return
 
 def find_pca_loadings(pca,component):
     c = pca.components_[component-1]
