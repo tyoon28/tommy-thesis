@@ -45,14 +45,16 @@ def main():
     finalDf['start'] = finalDf['name'].str.split('-').str[3]
     finalDf['start'] = finalDf['start'].apply(int)
     print('done w pca')
-    print(finalDf[finalDf.isnull().any(axis=1)])
     plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-all')
+    PCA_logistic_selection(finalDf,pca,nPCs)
+
     print('done w all')
 
     for r in ['R1','R2','R3']:
         print(f'running PCA whole for {r}')
         d = df.loc[df['replicate'] == r]
-        print(len(d))
+        print(d[d.isnull().any(axis=1)])
+
         features = graphlet_names
         x = d.loc[:, features].values
         y = d.loc[:,['chol']].values
@@ -72,7 +74,6 @@ def main():
                 , columns = [f'PC{x}' for x in range(1,nPCs+1)])
         finalDf = pd.concat([principalDf, d[['chol','name']]], axis = 1)
         plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn=f'dyngraphlets-{r}')
-        PCA_logistic_selection(finalDf,pca,nPCs)
         print(f'done with PCA whole for {r}')
     
     for r in ['R1','R2','R3','all']:
