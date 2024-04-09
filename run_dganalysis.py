@@ -71,7 +71,7 @@ def main():
                 , columns = [f'PC{x}' for x in range(1,nPCs+1)])
         finalDf = pd.concat([principalDf, d[['chol','name']]], axis = 1)
         plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn=f'dyngraphlets-{r}')
-        PCA_logistic_selection(finalDf,pca,nPcs)
+        PCA_logistic_selection(finalDf,pca,nPCs)
         print(f'done with PCA whole for {r}')
     
     for r in ['R1','R2','R3','all']:
