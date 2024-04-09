@@ -224,7 +224,6 @@ def dynamic_PCA_nodes(r):
             rows[i][1] = 15
         else: rows[i][1] = 30
         
-    # make this np array with averages
     d = '../dynamic_graphlets/output'
     for fn in tqdm.tqdm(os.listdir(d)):
         if fn == '.DS_Store': continue
