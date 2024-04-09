@@ -73,7 +73,7 @@ def main():
         principalDf = pd.DataFrame(data = principalComponents
                 , columns = [f'PC{x}' for x in range(1,nPCs+1)])
         finalDf = pd.concat([principalDf, d[['chol','name']]], axis = 1)
-        print(finalDf[finalDf.isnull().any(axis=1)])
+        # print(finalDf[finalDf.isnull().any(axis=1)])
         pcpair = PCA_logistic_selection(finalDf,pca,nPCs)
         plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn=f'dyngraphlets-{r}',PCs=pcpair)
         print(f'done with PCA whole for {r}')
