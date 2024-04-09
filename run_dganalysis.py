@@ -53,8 +53,8 @@ def main():
     for r in ['R1','R2','R3']:
         print(f'running PCA whole for {r}')
         d = df.loc[df['replicate'] == r]
+        d = d.reset_index(drop=True)
         
-
         features = graphlet_names
         x = d.loc[:, features].values
         y = d.loc[:,['chol']].values
