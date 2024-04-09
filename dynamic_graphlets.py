@@ -170,8 +170,8 @@ def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None):
         plt.show()
     return
 
-def PCA_logistic_selection(finalDf,pca):
-    X = finalDf[[f'PC{x}' for x in range(1,5)]]
+def PCA_logistic_selection(finalDf,pca,nPCs):
+    X = finalDf[[f'PC{x}' for x in range(1,nPCs+1)]]
     y = finalDf['chol']
     X_train, X_test, y_train, y_test = train_test_split(X,y , 
                                     random_state=104,  
