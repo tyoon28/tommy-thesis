@@ -45,6 +45,7 @@ def main():
     finalDf['start'] = finalDf['name'].str.split('-').str[3]
     finalDf['start'] = finalDf['start'].apply(int)
     print('done w pca')
+    print(finalDf[finalDf.isnull().any(axis=1)])
     plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-all')
     print('done w all')
 
