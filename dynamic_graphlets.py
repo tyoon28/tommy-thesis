@@ -132,14 +132,14 @@ def dyngraphlets_cholesterol(u):
 
 
 
-def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None):
+def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None,PCs=('PC1','PC2')):
     # PLOTTING PCA. only for 15 and 30
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1) 
     # ax.set_xlabel('Principal Component 1', fontsize = 15)
-    ax.set_xlabel('PC 1', fontsize = 15)
+    ax.set_xlabel(PCs[0], fontsize = 15)
 
-    ax.set_ylabel('PC 2', fontsize = 15)
+    ax.set_ylabel(PCs[1], fontsize = 15)
     ax.set_title('PCA dynamic graphlet degree distribution', fontsize = 20)
 
     targets = sorted(finalDf['chol'].unique())
@@ -149,14 +149,15 @@ def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None):
     # ax.scatter(finalDf['start']
     #             , finalDf['PC2']
     #             , c = 'r')
+    x,y = PCs
     for target in targets:
         indicesToKeep = finalDf['chol'] == target
         if len(indicesToKeep) > 10:
             c = next(color)
             
             
-            ax.scatter(finalDf.loc[indicesToKeep, 'PC1']
-                    , finalDf.loc[indicesToKeep, 'PC2'],
+            ax.scatter(finalDf.loc[indicesToKeep, x]
+                    , finalDf.loc[indicesToKeep, y],
                     c=c)
             
     ax.legend(targets)
@@ -170,7 +171,7 @@ def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None):
         plt.show()
     return
 
-def PCA_logistic_selection(finalDf,pca,nPCs):
+def PCA_logistic_selection(finalDf,pca,nPCs,output_fig=True):
     X = finalDf[[f'PC{x}' for x in range(1,nPCs+1)]]
     y = finalDf['chol']
     X_train, X_test, y_train, y_test = train_test_split(X,y , 
@@ -187,14 +188,15 @@ def PCA_logistic_selection(finalDf,pca,nPCs):
     y_pred = model.predict(X_test)
     print('Accuracy of logistic regression classifier on test set: {:.2f}'.format(model.score(X_test, y_test)))
     coefficients = model.coef_[0]
-
+    
     feature_importance = pd.DataFrame({'Feature': X.columns, 'Importance': np.abs(coefficients)})
     feature_importance = feature_importance.sort_values('Importance', ascending=True)
-    feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
-    plt.savefig(f'varimportance.png')
-    plt.clf()
-    return
-
+    if output_fig:
+        feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
+        plt.savefig(f'varimportance.png')
+        plt.clf()
+    return (feature_importance['Feature'][0],feature_importance['Feature'][1])
+    
 def find_pca_loadings(pca,component):
     c = pca.components_[component-1]
     indices = np.argsort(c)
