@@ -45,8 +45,9 @@ def main():
     finalDf['start'] = finalDf['name'].str.split('-').str[3]
     finalDf['start'] = finalDf['start'].apply(int)
     print('done w pca')
-    plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-all')
-    PCA_logistic_selection(finalDf,pca,nPCs)
+    pcpair =PCA_logistic_selection(finalDf,pca,nPCs)
+    plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-all',PCs=pcpair)
+    
 
     print('done w all')
 
