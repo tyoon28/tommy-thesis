@@ -195,7 +195,7 @@ def PCA_logistic_selection(finalDf,pca,nPCs,output_fig=True):
         feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
         plt.savefig(f'varimportance.png')
         plt.clf()
-    return (feature_importance['Feature'][-1],feature_importance['Feature'][-2])
+    return (feature_importance['Feature'].iloc[-1],feature_importance['Feature'].iloc[-2])
     
 def find_pca_loadings(pca,component):
     c = pca.components_[component-1]
