@@ -4,6 +4,7 @@ Functions for making networks from MD data.
 
 from network_statistics import *
 import dynetx as dn
+from pathlib import Path
 
 
 # suppress some MDAnalysis warnings about PSF files
