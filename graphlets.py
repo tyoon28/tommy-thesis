@@ -37,7 +37,7 @@ def output_sampled_graphs(u,numgraphs,basename,lengraph=1000):
 
 def output_uniform_graphs(u,numgraphs,basename,lengraph=1000):
     starts = np.linspace(0,len(u.trajectory)-lengraph,numgraphs)
-    starts = np.rint(starts).astype(np.int32)
+    starts = np.rint(starts).astype(np.int32) # round integer
     for i in tqdm.tqdm(starts):
         fn = f'{basename}-{i}-{i+lengraph}.in'
         output_consensus_graph(u,fn,s=i,d=i+lengraph)
