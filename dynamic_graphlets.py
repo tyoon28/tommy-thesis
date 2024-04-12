@@ -82,7 +82,7 @@ def dyngraphlets_cholesterol(u):
             if file.endswith('.xtc'):
                 xtcs.append(f'R1-{i}-closed/'+file)
         xtcs.sort(key=lambda x: int(x.split('-')[1]))
-        u = mda.Universe(f'R1-{i}-closed/R1-0-start-membrane-3JYC.pdb',*xtcs)
+        u = mda.Universe(f'R1-{i}-closed/R1-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
         starts = np.linspace(0,len(u.trajectory)-winlen,50).astype(np.int32)
         basename = f'R1-{i}-closed'
         for j in tqdm.tqdm(starts):

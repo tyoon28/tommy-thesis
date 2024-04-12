@@ -141,7 +141,7 @@ def main():
         replicates.extend([rep for i in range(len(x))])
 
     
-    print('making df')
+    print(f'making df with {len(big)}')
     df = pd.DataFrame(big,columns=list(range(nfeatures)))
     df['node'] = df.index%nres + 1
     df['chol'] = chol
