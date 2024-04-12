@@ -123,9 +123,9 @@ def plot_PCA_gdd(finalDf,out):
     ax.xaxis.set_major_locator(AutoLocator())
     plt.savefig(f'{out}.png')
 
-def PCA_logistic_selection(finalDf,pca):
-    #TODO: do this including all replicates
-    X = finalDf[[f'PC{x}' for x in range(1,18)]]
+def PCA_logistic_selection(finalDf,pca,nPCs):
+    #TODO: do this including all replicates. maybe do it with just graphlets instead of PCs.
+    X = finalDf[[f'PC{x}' for x in range(1,nPCs+1)]]
     y = finalDf['chol']
     X_train, X_test, y_train, y_test = train_test_split(X,y , 
                                     random_state=104,  
@@ -224,12 +224,12 @@ def PCA_node_signature(ldirs):
 
 
 
-def output_graphs_graphlets_cholesterol(replicate):
+def output_graphs_graphlets_cholesterol(replicate,thresh=0.4):
     '''make orca input for a replicate'''
     # which graphlets are associates with cholesterol occupancy (magnitude and boolean)?
     # find frames where cholesterol is bound
     #random sample of a bunch of frames
-    winlen = 50
+    winlen = 100
     for i in ['30','15']:
         print(f'making cholesterol graphs for {replicate}-{i}')
         xtcs = []
@@ -246,17 +246,24 @@ def output_graphs_graphlets_cholesterol(replicate):
 
         # find how many cholesterols are binding in each sampled window
         print(f'calculating cholesterol binding for {replicate}-{i}')
-        for t in tqdm.tqdm(starts):
-            bound = sterol_occupancy_at_t(u,t,winlen,0.40)
-            if bound not in cholesterol:
-                cholesterol[bound] = [t]
-            else:
-                cholesterol[bound].append(t)
-        # compute graphlets for a sample of each level of cholesterol binding
+        rog = Cholesterol_contact(u)
+        rog.run(start=0,verbose=True)
         print(f'outputting graphs of length {winlen} for cholesterol binding for {replicate}-{i}')
-        for n in cholesterol:
-            for f in cholesterol[n]:
-                output_consensus_graph(u,f'../orca/input/{basename}-contact/{basename}-contact-c{n}-f{f}.in',s=f,d=f+winlen)
+        for t in tqdm.tqdm(starts):
+            numbinding = 0
+            numcontacts = 0
+            for c in rog.results:
+                a = np.array(rog.results[c]['binding_events_actual'])
+                nb = np.count_nonzero(np.logical_and(a >= t, a <= t+winlen))
+
+                b = np.array(rog.results[c]['contacts'])
+                nc = np.array(rog.results[c]['contacts'])
+        
+                if nb >= winlen * thresh:
+                    numbinding += 1
+                if nc >= winlen * thresh:
+                    numcontacts += 1
+                output_consensus_graph(u,f'../orca/input/{basename}-contact/{basename}-contact-c{numcontacts}-cc{numbinding}-f{f}.in',s=f,d=f+winlen)
         print(f'done with cholesterol graphs for {replicate}-{i}')
     return
 
@@ -274,6 +281,8 @@ def graphlets_cholesterol_pca(r):
             gdd = graphlet_degree_distribution(os.path.join(d, f))
 
             chol = f.split('-')[4][1:]
+            chol_bind = f.split('-')[5][2:]
+
             if 'closed' in f: state = 'closed'
             else: state = 'open'
             if '-15-' in f:
@@ -281,35 +290,41 @@ def graphlets_cholesterol_pca(r):
             else:
                 chol_condition = 30
 
-            gdds.append([f,chol,chol_condition,state] + list(gdd))
+            gdds.append([f,chol,chol_bind,chol_condition,state] + list(gdd))
     
     
-    df = pd.DataFrame(gdds,columns=["name", "chol",'chol_condition', "state"] + list(map(str,range(73))))
+    df = pd.DataFrame(gdds,columns=["name", "chol",'chol_bind','chol_condition', "state"] + list(map(str,range(73))))
     df['chol'] = df['chol'].apply(int)
+    df['chol_bind'] = df['chol_bind'].apply(int)
+
 
     # https://builtin.com/machine-learning/pca-in-python
-    features = list(map(str,range(73)))
-    x = df.loc[:, features].values
-    y = df.loc[:,['chol']].values
-    x = StandardScaler().fit_transform(x)
+    # see difference between cholesterol contacts and cholesterol "binding"
+    for column in ['chol','chol_bind']:
+        features = list(map(str,range(73)))
+        x = df.loc[:, features].values
+        y = df.loc[:,['chol']].values
+        x = StandardScaler().fit_transform(x)
 
-    # take PCA components with 99% variance explained
-    pca = PCA()
-    principalComponents = pca.fit_transform(x)
-    evr = pca.explained_variance_ratio_.cumsum()
-    for i,j in enumerate(evr):
-        if j > 0.99:
-            nPCs = i + 1
-    pca = PCA(n_components=nPCs)
-    principalComponents = pca.fit_transform(x)
-    principalDf = pd.DataFrame(data = principalComponents
-             , columns = [f'PC{x}' for x in range(1,nPCs+1)])
-    
-    finalDf = pd.concat([principalDf, df[['chol','name']]], axis = 1)
-    finalDf['start'] = finalDf['name'].str.split('-').str[5].str[1:-4]
-    finalDf['start'] = finalDf['start'].apply(int)
+        # take PCA components with 99% variance explained
+        pca = PCA()
+        principalComponents = pca.fit_transform(x)
+        evr = pca.explained_variance_ratio_.cumsum()
+        for i,j in enumerate(evr):
+            if j > 0.99:
+                nPCs = i + 1
+        pca = PCA(n_components=nPCs)
+        principalComponents = pca.fit_transform(x)
+        principalDf = pd.DataFrame(data = principalComponents
+                , columns = [f'PC{x}' for x in range(1,nPCs+1)])
+        
+        finalDf = pd.concat([principalDf, df[['chol','name']]], axis = 1)
+        finalDf['start'] = finalDf['name'].str.split('-').str[5].str[1:-4]
+        finalDf['start'] = finalDf['start'].apply(int)
 
-    plot_PCA_gdd(finalDf,f'{r}_graphlet_cholesterol')
+        plot_PCA_gdd(finalDf,f'{r}_graphlet_cholesterol_{column}')
+
+
 
     #bar chart to show prevalence of graphlet x in each cholesterol state
     # result_group_chol= df.groupby(['chol'])

@@ -3,60 +3,9 @@ from itertools import combinations
 
 
 def main():
-    contact_threshold = 6
-    u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb','R1-30-closed/R1-0-1000-3JYC.xtc')
-    for c in ['15','30']:
-        if c == '15': 
-            color = 'cyan'
-            darkcolor = 'blue'
-        else: 
-            color = 'yellow'
-            darkcolor = 'red'
-        avg = np.zeros(len(u.trajectory))
-        for r in ['R1','R2','R3']:
-            xtcs = []
-            for file in os.listdir(f'{r}-{c}-closed'):
-                if file.endswith('.xtc'):
-                    xtcs.append(f'{r}-{c}-closed/'+file)
-            xtcs.sort(key=lambda x: int(x.split('-')[1]))
-            u = mda.Universe(f'{r}-{c}-closed/{r}-0-start-membrane-3JYC.pdb',*xtcs,continuous= True)
-
-            protein = u.select_atoms('not resname CHOL and not resname POPC').residues
-            chol = u.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
-
-            protein_sterols = protein + chol
-
-            t = np.zeros(len(u.trajectory))
-            y = np.zeros(len(u.trajectory))
-            y2=np.zeros(len(u.trajectory))
-            # count cholesterols occupying
-            # have lines in background, thick line for average of the replicates, and both conditions in same plot.
-            for ts in tqdm.tqdm(u.trajectory[:]):
-                tim = u.trajectory.time
-                t[u.trajectory.frame] = tim
-
-
-                r = protein_sterols.atoms.center_of_mass(compound='residues')
-                contact_mat = distances.contact_matrix(r, cutoff=contact_threshold)
-
-                # take only items representing chol-protein contacts
-                z = contact_mat[:len(protein),len(protein):]
-                occupancy = np.sum(np.any(z,0))
-                occupancy2 = np.sum(np.any(z,1))
-                y[u.trajectory.frame] = occupancy
-                y2[u.trajectory.frame] = occupancy2
-
-            y2_subsample = y2[::100]
-            t_subsample = t[::100]
-            
-            plt.plot(t,y,color)
-            avg += y
-        avg = avg / 3
-        plt.plot(t,avg,darkcolor)
-    plt.savefig('figure_cholcontact.png')
-
     persistance()
     chol_contact()
+    chol_interactionlength()
 
 def correlation():
     # how long do edges last?
@@ -167,8 +116,62 @@ def persistance():
 
 
 
-
 def chol_contact():
+    contact_threshold = 6
+    u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb','R1-30-closed/R1-0-1000-3JYC.xtc')
+    for c in ['15','30']:
+        if c == '15': 
+            color = 'cyan'
+            darkcolor = 'blue'
+        else: 
+            color = 'yellow'
+            darkcolor = 'red'
+        avg = np.zeros(len(u.trajectory))
+        for r in ['R1','R2','R3']:
+            xtcs = []
+            for file in os.listdir(f'{r}-{c}-closed'):
+                if file.endswith('.xtc'):
+                    xtcs.append(f'{r}-{c}-closed/'+file)
+            xtcs.sort(key=lambda x: int(x.split('-')[1]))
+            u = mda.Universe(f'{r}-{c}-closed/{r}-0-start-membrane-3JYC.pdb',*xtcs,continuous= True)
+
+            protein = u.select_atoms('not resname CHOL and not resname POPC').residues
+            chol = u.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
+
+            protein_sterols = protein + chol
+
+            t = np.zeros(len(u.trajectory))
+            y = np.zeros(len(u.trajectory))
+            y2=np.zeros(len(u.trajectory))
+            # count cholesterols occupying
+            # have lines in background, thick line for average of the replicates, and both conditions in same plot.
+            for ts in tqdm.tqdm(u.trajectory[:]):
+                tim = u.trajectory.time
+                t[u.trajectory.frame] = tim
+
+
+                r = protein_sterols.atoms.center_of_mass(compound='residues')
+                contact_mat = distances.contact_matrix(r, cutoff=contact_threshold)
+
+                # take only items representing chol-protein contacts
+                z = contact_mat[:len(protein),len(protein):]
+                occupancy = np.sum(np.any(z,0))
+                occupancy2 = np.sum(np.any(z,1))
+                y[u.trajectory.frame] = occupancy
+                y2[u.trajectory.frame] = occupancy2
+
+            y2_subsample = y2[::100]
+            t_subsample = t[::100]
+            
+            plt.plot(t,y,color)
+            avg += y
+        avg = avg / 3
+        plt.plot(t,avg,darkcolor)
+        print(f'{c} mol%: average {np.mean(avg)}')
+    plt.savefig('figure_cholcontact.png', dpi=300, bbox_inches='tight')
+
+
+def chol_interactionlength():
     # cholesterol contacts tend to be short, with most lasitng X ns. longest contact is X ns.
     # lengths of interactions of binding sites vs with rest of protein
     data = []
@@ -203,13 +206,22 @@ def chol_contact():
 
         data.append([avg_bs,avg_rest])
 
-        
+
+    # grouped bar chart with binding site/non bs and chol concentration.
     index = ['15 mol%', '30 mol%']
     df = pd.DataFrame({'Binding site': data[0], 'Non-binding site': data[1]}, index=index)
     ax = df.plot.bar(rot=0)
     plt.xlabel('Cholesterol concentration')
     plt.ylabel('Average Interaction length (frames (change this to ns))')
     plt.savefig('figure_cholesterol_interactionlength', dpi=300, bbox_inches='tight')
+    plt.clear()
+
+
+    plt.hist([bs_vs_rest[0],bs_vs_rest[1]], stacked=True, density=True)
+    plt.legend(['Binding sites','All other residues'])
+    plt.savefig('figure_cholesterol_interactionlength2', dpi=300, bbox_inches='tight')
+    plt.clear()
+
     return
 
 
@@ -220,11 +232,24 @@ def chol_contact():
     # B) a violinish plot with 2 x values - binding site and not        
 
 def graphs():
+
+    xtcs = []
+    for file in os.listdir('R1-30-closed'):
+        if file.endswith('.xtc'):
+            xtcs.append('R1-30-closed/'+file)
+    xtcs.sort(key=lambda x: int(x.split('-')[1]))
+    u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb',*xtcs,continuous= True)
+
+    viz_consensus_graph(u,start=0,end=None,threshold = 0.9,outname='',**kwargs)
+
     # generate contact graphs with increasingly smaller resolutions, also generate colors for protein
     pass
 
 def triangle():
     pass
+
+
+
 
 if __name__ == "__main__":
     warnings.filterwarnings('ignore')

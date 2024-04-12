@@ -14,7 +14,7 @@ def main():
 
         # make graphs for different cholesterol conditions --> cholesterol analysis
         print(f'making graphs for cholesterol occupancy for {r}')
-        output_graphs_graphlets_cholesterol(r)
+        output_graphs_graphlets_cholesterol(r,0.4)
 
         # make full graphs for 15 and 30 conditions --> node analysis
         print('making full graphs for 15 and 30 conditions')

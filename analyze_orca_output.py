@@ -12,6 +12,7 @@ def main():
         finalDf,pca = PCA_gdd(ldirs)
         print(f'making PCA plots for {r}')
         plot_PCA_gdd(finalDf,f'{r}_PCA_gdd')
+        # DO VARIABLE IMPORTANCE
 
         print(f'doing cholesterol plots for {r}')
         graphlets_cholesterol_pca(r)

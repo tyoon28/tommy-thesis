@@ -216,7 +216,7 @@ def network_selected(u,residues):
 
     return G
 
-def viz_consensus_graph(u,start=0,end=None,threshold = 0.9,**kwargs):
+def viz_consensus_graph(u,start=0,end=None,threshold = 0.9,outname='',**kwargs):
     # for gephi input
     res = u.select_atoms('not resname CHOL and not resname POPC')
     lenr = len(res.residues)
@@ -232,7 +232,7 @@ def viz_consensus_graph(u,start=0,end=None,threshold = 0.9,**kwargs):
     
     t = len(u.trajectory[start:end]) * threshold
     G = nx.from_numpy_array((edgesmat >= t))
-    nx.write_gexf(G,'closed_15_90.gexf')
+    nx.write_gexf(G,f'{outname}.gexf')
 
     # for i in nx.connected_components(G):
     #     if len(i) > 30:
