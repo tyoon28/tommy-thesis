@@ -6,7 +6,7 @@ import warnings
 
 
 def main():
-    for r in ['R2','R3']:
+    for r in ['R1','R2','R3']:
         print(f'working on {r}')
         # make make uniform distributed snapshots for 30 and 15 conditions --> full network analysis
         print(f'making uniform snapshots for {r}')
@@ -19,6 +19,7 @@ def main():
         # make full graphs for 15 and 30 conditions --> node analysis
         print('making full graphs for 15 and 30 conditions')
         output_for_node_pca(r)
+
 
 
 
