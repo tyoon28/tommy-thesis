@@ -16,6 +16,10 @@ from pathlib import Path
 import statsmodels.api as sm 
 import hypernetx as hnx
 from matplotlib.pyplot import cm
+from sklearn.metrics import (confusion_matrix,accuracy_score) 
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import roc_curve, roc_auc_score 
+from sklearn.model_selection import KFold, cross_val_score
 import pickle 
 
 
@@ -89,7 +93,7 @@ def PCA_gdd(ldirs):
     finalDf['start'] = finalDf['name'].str.split('-').str[3]
     finalDf['start'] = finalDf['start'].apply(int)
 
-    return finalDf,pca
+    return df,finalDf,pca
 
 
 def plot_PCA_gdd(finalDf,out):
@@ -795,3 +799,58 @@ def node_PCA_windowed(r,ldirs,output=False):
 
 
     return dd
+
+
+
+
+def logistic_selection(df,r):
+    X = df[list(range(73))]
+    y = (df['chol'] - 15 )/15
+    X_train, X_test, y_train, y_test = train_test_split(X,y , 
+                                    random_state=104,  
+                                    train_size=0.8,  
+                                    shuffle=True) 
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    model = LogisticRegression(solver='liblinear', random_state=0)
+    model.fit(X_train, y_train)
+    model.coef_
+    y_pred = model.predict(X_test)
+    print('Accuracy of logistic regression classifier on test set: {:.2f}'.format(model.score(X_test, y_test)))
+    coefficients = model.coef_[0]
+    coefficients = np.std(X, 0)*model.coef_[0]
+
+    feature_importance = pd.DataFrame({'Feature': X.columns, 'Importance': np.abs(coefficients)})
+    feature_importance = feature_importance.sort_values('Importance', ascending=True)
+    feature_importance = feature_importance.iloc[-20:]
+    feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
+    plt.savefig(f'{r}-gdd-varimportance-logit.png')
+
+    # rf performs worse than logit
+    # rf = RandomForestRegressor(n_estimators = 500)
+    # # Train the model on training data
+    # rf.fit(X_train, y_train)
+    # probs = rf.predict(X_test)
+    # preds = np.round(probs)
+    # # Calculate the absolute errors
+    # acc = (y_test == preds).sum() / len(preds)
+    # TP = ((preds == 1) & (y_test == 1)).sum()
+    # FP = ((preds == 1) & (y_test == 0)).sum()
+    # precision = TP / (TP+FP)
+
+    # fpr, tpr, thresholds = roc_curve(y_test, probs, pos_label=1)
+    # roc_auc = roc_auc_score(y_test, probs) 
+    # roc_auc
+
+    # # CV:
+    # k_folds = KFold(n_splits = 5)
+
+    # scores = cross_val_score(rf, X, y, cv = k_folds)
+    # rf_feature_importance = pd.DataFrame({'Feature': X.columns, 'Importance': rf.feature_importances_})
+    # rf_feature_importance = rf_feature_importance.sort_values('Importance', ascending=True)
+    # rf_feature_importance = rf_feature_importance.iloc[-20:]
+    # rf_feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
+    # plt.savefig(f'{r}-gdd-varimportance-rf.png')
+    return

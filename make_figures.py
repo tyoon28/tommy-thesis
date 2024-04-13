@@ -1,15 +1,25 @@
 from graphlets import *
 from itertools import combinations
+import seaborn as sns
+
 
 
 def main():
-    persistance()
+    mid_all = persistance()
+    correlation(mid_all)
     chol_contact()
     chol_interactionlength()
 
-def correlation():
-    # how long do edges last?
-    for r,c in [(i,j) for i in ['R1','R2','R3'] for j in ['15','30']]:
+def correlation(mid_all):
+    # perhaps change this to only middle stable contacts.
+    # i'm only doing this for 30 mol%.
+    c = '30'
+
+    # store all contacts in mm
+    nedges = len(mid_all[0])
+    comp = np.zeros((len(u.trajectory),nedges),dtype=bool) # comparison matrix for 1 replicate
+    store = np.zeros((len(u.trajectory),nedges),dtype=bool) # average of all replicates
+    for r in ['R1','R2','R3']:
         xtcs = []
         for file in os.listdir(f'{r}-{c}-closed'):
             if file.endswith('.xtc'):
@@ -20,67 +30,33 @@ def correlation():
         contact_threshold = 6
         sterols = u.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
         protein = u.select_atoms('not resname CHOL and not resname POPC').residues
-        lenp = len(protein)
 
-        # for correlation values, try going through time and recording how many frames edges have in common.
-        numedges = int(((lenp**2)-lenp)/2)
-
-        # matrix storing how many times edge i and edge j are there together or absent together
-        r = protein.atoms.center_of_mass(compound='residues')
-        mat = distances.contact_matrix(r, cutoff=6)
-        mm = np.zeros((lenp,lenp))
-
-        results = np.zeros((numedges,numedges))
-        for ts in tqdm.tqdm(u.trajectory):
-            frame = u.trajectory.frame
-            r = protein.atoms.center_of_mass(compound='residues')
-            mat = distances.contact_matrix(r, cutoff=6)
-            np.fill_diagonal(mat, 0)
-            mm += (mat != 0)
-        
-        numedges = np.count_nonzero(mm)
-        mask = (mm>0)
-        mask.nonzero()
-
-        # comp contains how many times each pair of edges is co-occurent.
-        comp = np.zeros((len(u.trajectory),numedges),dtype=bool)
         i = 0
         for ts in tqdm.tqdm(u.trajectory):
-            r = protein.atoms.center_of_mass(compound='residues')
-            mat = distances.contact_matrix(r, cutoff=6)
-            comp[i] = mat[mask]
-            i += 1
-
-        df = pd.DataFrame(comp)
-        df.corr(method='pearson')
-
-
-
-
-        
-
-
-        
-        
-        
-        print('setup done')
-        edges = []
-
-        # how many edges exist for less than 90%?
-        for ts in tqdm.tqdm(u.trajectory):
             frame = u.trajectory.frame
             r = protein.atoms.center_of_mass(compound='residues')
             mat = distances.contact_matrix(r, cutoff=6)
             np.fill_diagonal(mat, 0)
-            edgesmat += mat
-        t = len(u.trajectory[20:]) * 0.9
-        mask = (edgesmat < t)
-        num_non_persistent = mask.sum()/2
+            # only look at middling edges.
+            comp[i] = mat[mid_all]
+            i += 1
+        store += comp
+    
+    df = pd.DataFrame(store/3)
+    cor = df.corr(method='pearson')
+    plot = sns.heatmap(cor, annot=True)
+    fig = plot.get_figure()
+    fig.savefig("cormat-30.png") 
+
+
+
+        
+
     return
 
 def persistance():
 
-    # histogram of edges versus how long they last
+    
     for c in ['15','30']:
         for r in ['R1','R2','R3']:
             contact_threshold = 6
@@ -103,16 +79,24 @@ def persistance():
         store = store / (len(u.trajectory) * 3)
         # get all edges in a 1D np array
         no0 = store[np.where(store!=0)]
+        if c == '30':
+            # mid_all stores the edges that appear between 10 and 90 percent of the time.
+            mid_all = (np.where(abs(abs(store)-0.5) < 0.4))
         mid = no0[np.where(no0 > 0.1)]
-        mid = mid[np.where(mid > 0.9)]
+        mid = mid[np.where(mid < 0.9)]
 
         plt.hist(no0)
-        print(f'persistence {c}: len(mid)')
+        print(f'persistence {c} mol%: {len(mid)}')
+        print(f'middle percent total contact time in {c} mol%: {np.sum(mid)/np.sum(no0)}')
+
+    
     plt.xlabel('average % persistance')
     plt.ylabel('count')
     plt.legend(['15 mol%','30 mol%'])
 
     plt.savefig('figure_edgepersistence.png')
+
+    return mid_all
 
 
 
