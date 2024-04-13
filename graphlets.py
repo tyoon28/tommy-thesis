@@ -233,7 +233,7 @@ def output_graphs_graphlets_cholesterol(replicate,thresh=0.4):
     # which graphlets are associates with cholesterol occupancy (magnitude and boolean)?
     # find frames where cholesterol is bound
     #random sample of a bunch of frames
-    winlen = 100
+    winlen = 500
     for i in ['30','15']:
         print(f'making cholesterol graphs for {replicate}-{i}')
         xtcs = []

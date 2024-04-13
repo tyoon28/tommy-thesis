@@ -5,10 +5,25 @@ import seaborn as sns
 
 
 def main():
+    # inefficient to do all of these in series but who cares.
+    print('calculating persistence in RIN')
     mid_all = persistance()
+
+    print('calculating correlations between contacts')
     correlation(mid_all)
+
+    print('calculating cholesterol contact landscape')
     chol_contact()
+
+    print('calculating cholesterol contact landscape - binding sites')
     chol_interactionlength()
+
+    print('calculating centralities')
+    centralities()
+
+    print('cholesterol threshold graph')
+    chol_thresh()
+
 
 def correlation(mid_all):
     # perhaps change this to only middle stable contacts.
@@ -46,17 +61,12 @@ def correlation(mid_all):
     cor = df.corr(method='pearson')
     plot = sns.heatmap(cor, annot=True)
     fig = plot.get_figure()
-    fig.savefig("cormat-30.png") 
-
-
-
-        
+    fig.savefig("cormat-30.png")
 
     return
 
 def persistance():
-
-    
+    # did i spell it right?
     for c in ['15','30']:
         for r in ['R1','R2','R3']:
             contact_threshold = 6
@@ -232,6 +242,55 @@ def graphs():
 def triangle():
     pass
 
+def centralities():
+    # take average centrality.
+    betweenesses = {}
+    closenesses = {}
+    eigenvectors = {}
+    i = 0
+    for r in ['R1','R2','R3']:
+        for c in ['15','30']:
+            xtcs = []
+            for file in os.listdir(f'{r}-{c}-closed'):
+                if file.endswith('.xtc'):
+                    xtcs.append(f'{r}-{c}-closed/'+file)
+            xtcs.sort(key=lambda x: int(x.split('-')[1]))
+            u = mda.Universe(f'{r}-{c}-closed/{r}-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
+            G = get_consensus_graph()
+            betweenness = nx.betweenness_centrality(G)
+            closeness = nx.closeness_centrality(G)
+            eigenvector = nx.eigenvector_centrality_numpy(G)
+
+            if i == 0:
+                betweenesses = betweenness
+                closenesses = closeness
+                eigenvectors = eigenvector
+            else:
+                for d,s in [(betweenesses,betweenness),(closenesses,closenesses),(eigenvectors,eigenvector)]:
+                    for item in d:
+                        d[item] += s[item]
+            i += 1
+    
+    for d in [betweenesses,closenesses,eigenvectors]:
+        for item in d:
+            d[item] = d[item] / i    
+        
+
+    color_by_centrality(betweenness,'betweenness-all')
+    color_by_centrality(closeness,'closeness-all')
+    color_by_centrality(eigenvector,'eigenvector-all')
+
+    dd_to_csv(betweenness,'betweenness',u)
+    dd_to_csv(closeness,'closeness',u)
+    dd_to_csv(eigenvector,'eigenvector',u)
+    return
+
+def chol_thresh():
+    data = []
+    rog = Cholesterol_contact(u)
+    rog.run(start=0,verbose=True)
+    for t in np.linspace(0,1,30):
+        pass
 
 
 

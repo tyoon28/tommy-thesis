@@ -47,13 +47,12 @@ class Cholesterol_contact(AnalysisBase):
         # Data structures can be set up at this time
         # get all cholesterol ids
         self.b_sites = np.array(binding_sites('closed')) - 1 # shift index
-        self.binding = {i:False for i in self.sterols.resids}
         self.sterols = self.ag.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
         self.protein = self.ag.select_atoms('not resname CHOL and not resname POPC').residues
         self.lenprotein = len(self.protein)
         self.lensterols = len(self.sterols)
 
-
+        self.binding = {i:False for i in self.sterols.resids}
         self.sterol_residuecontacts = {i:0 for i in self.sterols.resids}
         self.currentinteractions = {i:[] for i in self.sterols.resids}
 

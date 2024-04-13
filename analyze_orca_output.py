@@ -3,7 +3,7 @@ from graphlets import *
 import warnings
 
 
-
+#TODO: after inspection look for G14 in response to choleseterol
 def main():
     for r in ['R1','R2','R3']:
         print(f'working on {r}')
