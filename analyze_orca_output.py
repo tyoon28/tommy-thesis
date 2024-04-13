@@ -33,6 +33,7 @@ def main():
 
         print(f'done with {r}')
     print('running combined')
+    r = 'all'
     ldirs = [f'../orca/output/{r}-15-closed',f'../orca/output/{r}-30-closed' for r in ['R1','R2','R3']]
 
     finalDf,pca = PCA_gdd(ldirs)
@@ -49,7 +50,7 @@ def main():
     node_pca_analysis(r,output=True)
 
     print(f'doing individual nodes windowed for all')
-    node_PCA_windowed(r,ldirs,output=False)
+    node_PCA_windowed(r,output=False)
     # TODO: which nodes are highly predictive of cholesterol condition?
 
     # print(f'doing individual nodes with cholesterol for {r}')
