@@ -106,7 +106,9 @@ def persistance():
 
         plt.hist(no0)
         print(f'persistence {c} mol%: {len(mid)}')
+        print(f'total coltacts: {len(no0)}')
         print(f'middle percent total contact time in {c} mol%: {np.sum(mid)/np.sum(no0)}')
+        
 
     
     plt.xlabel('average % persistance')

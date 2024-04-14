@@ -278,7 +278,7 @@ def output_graphs_graphlets_cholesterol(replicate,thresh=0.4):
                     numbinding += 1
                 if nc >= winlen * thresh:
                     numcontacts += 1
-                output_consensus_graph(u,f'../orca/input/{basename}-contact/{basename}-contact-c{numcontacts}-cc{numbinding}-f{f}.in',s=f,d=f+winlen)
+            output_consensus_graph(u,f'../orca/input/{basename}-contact/{basename}-contact-c{numcontacts}-cc{numbinding}-f{f}.in',s=f,d=f+winlen)
         print(f'done with cholesterol graphs for {replicate}-{i}')
     return
 
