@@ -74,9 +74,10 @@ def correlation(mid_all):
 
 def persistance():
     # did i spell it right?
+    
     for c in ['15','30']:
         if c == '15': continue # decided this fig is only for 30%
-        store = np.zeros((lenp,lenp))
+        store = np.zeros((1348,1348))
         for r in ['R1','R2','R3']:
             contact_threshold = 6
             xtcs = []
