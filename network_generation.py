@@ -10,6 +10,8 @@ from pathlib import Path
 # suppress some MDAnalysis warnings about PSF files
 warnings.filterwarnings('ignore')
 def output_consensus_graph(u,filename,s=0,d=None,threshold = 0.9,**kwargs):
+    # s: start
+    # d: end
     res = u.select_atoms('not resname CHOL and not resname POPC')
     lenr = len(res.residues)
     edgesmat = np.zeros(shape=(lenr,lenr))

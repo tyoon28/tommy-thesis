@@ -21,6 +21,8 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import roc_curve, roc_auc_score 
 from sklearn.model_selection import KFold, cross_val_score
 import pickle 
+from hotelling.stats import hotelling_t2
+
 
 
 
@@ -85,13 +87,21 @@ def PCA_gdd(ldirs):
     for i,j in enumerate(evr):
         if j > 0.99:
             nPCs = i + 1
-    pca = PCA(n_components=nPCs)
+    pca = PCA(n_components=nPCs,alpha=0.05)
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
              , columns = [f'PC{x}' for x in range(1,nPCs+1)])
     finalDf = pd.concat([principalDf, df[['chol','name']]], axis = 1)
     finalDf['start'] = finalDf['name'].str.split('-').str[3]
     finalDf['start'] = finalDf['start'].apply(int)
+
+
+    # hotelling p https://dionresearch.github.io/hotelling/modules.html#module-hotelling.stats
+    # have to use PCs instead of features because some features are perfectly correlated. whatever, it works.
+    x = finalDf[finalDf['chol'] == 15].drop(columns = ['name','chol','start']).to_numpy()
+    y = finalDf[finalDf['chol'] == 30].drop(columns = ['name','chol','start']).to_numpy()
+
+    print(f'hotelling_p = {hotelling_t2(x,y)[2]}')
 
     return df,finalDf,pca
 
@@ -256,12 +266,13 @@ def output_graphs_graphlets_cholesterol(replicate,thresh=0.4):
         for t in tqdm.tqdm(starts):
             numbinding = 0
             numcontacts = 0
+            f = t + winlen
             for c in rog.results:
                 a = np.array(rog.results[c]['binding_events_actual'])
                 c = np.array(rog.results[c]['contacts'])
 
-                nb = np.count_nonzero(np.logical_and(a >= t, a <= t+winlen))
-                nc = np.count_nonzero(np.logical_and(c >= t, c <= t+winlen))
+                nb = np.count_nonzero(np.logical_and(a >= t, a <= f))
+                nc = np.count_nonzero(np.logical_and(c >= t, c <= f))
         
                 if nb >= winlen * thresh:
                     numbinding += 1
@@ -855,6 +866,27 @@ def logistic_selection(df,r):
     feature_importance = feature_importance.iloc[-20:]
     feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
     plt.savefig(f'{r}-gdd-varimportance-logit.png')
+
+    if r =='all':
+        graphlet_map = {2:1,3:8,4:15}
+        for graphlet_size in range(2,5):
+            X = df[list(range(graphlet_map[graphlet_size]))]
+            y = (df['chol'] - 15 )/15
+            X_train, X_test, y_train, y_test = train_test_split(X,y , 
+                                            random_state=104,  
+                                            train_size=0.8,  
+                                            shuffle=True) 
+            scaler = StandardScaler()
+            X_train = scaler.fit_transform(X_train)
+            X_test = scaler.transform(X_test)
+
+            model = LogisticRegression(solver='liblinear', random_state=0)
+            model.fit(X_train, y_train)
+            model.coef_
+            y_pred = model.predict(X_test)
+            print('Accuracy of logistic regression classifier on test set with max graphlet size {0}: {1:.2f}'.format(graphlet_size,model.score(X_test, y_test)))
+
+
 
     # rf performs worse than logit
     # rf = RandomForestRegressor(n_estimators = 500)

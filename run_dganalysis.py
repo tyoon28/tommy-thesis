@@ -1,4 +1,5 @@
 from dynamic_graphlets import *
+from hotelling.stats import hotelling_t2
 
 def main():
     gotnames = False
@@ -48,6 +49,11 @@ def main():
     pcpair =PCA_logistic_selection(finalDf,pca,nPCs)
     plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-all',PCs=pcpair)
     plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-colorbyrep',PCs=pcpair,colorby='replicate')
+
+    x = finalDf[finalDf['chol'] == 15].drop(columns = ['name','chol','start','replicate']).to_numpy()
+    y = finalDf[finalDf['chol'] == 30].drop(columns = ['name','chol','start','replicate']).to_numpy()
+
+    print(f'hotelling_p = {hotelling_t2(x,y)[2]}')
     
 
     print('done w all')

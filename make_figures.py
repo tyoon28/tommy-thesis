@@ -30,6 +30,13 @@ def correlation(mid_all):
     # i'm only doing this for 30 mol%.
     c = '30'
 
+    xtcs = []
+    for file in os.listdir(f'R1-30-closed'):
+        if file.endswith('.xtc'):
+            xtcs.append(f'R1-30-closed/'+file)
+    xtcs.sort(key=lambda x: int(x.split('-')[1]))
+    u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
+
     # store all contacts in mm
     nedges = len(mid_all[0])
     comp = np.zeros((len(u.trajectory),nedges),dtype=bool) # comparison matrix for 1 replicate
@@ -68,6 +75,8 @@ def correlation(mid_all):
 def persistance():
     # did i spell it right?
     for c in ['15','30']:
+        if c == '15': continue # decided this fig is only for 30%
+        store = np.zeros((lenp,lenp))
         for r in ['R1','R2','R3']:
             contact_threshold = 6
             xtcs = []
@@ -79,7 +88,6 @@ def persistance():
             sterols = u.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
             protein = u.select_atoms('not resname CHOL and not resname POPC').residues
             lenp = len(protein)
-            store = np.zeros((lenp,lenp))
             for ts in tqdm.tqdm(u.trajectory):
                 r = protein.atoms.center_of_mass(compound='residues')
                 mat = distances.contact_matrix(r, cutoff=6)
@@ -102,7 +110,7 @@ def persistance():
     
     plt.xlabel('average % persistance')
     plt.ylabel('count')
-    plt.legend(['15 mol%','30 mol%'])
+    # plt.legend(['15 mol%','30 mol%'])
 
     plt.savefig('figure_edgepersistence.png')
 
