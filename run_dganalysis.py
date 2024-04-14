@@ -75,7 +75,7 @@ def main():
     big= []
     replicates = []
     chol = []
-    for fn in tqdm.tqdm(os.listdir(d)[:20]):
+    for fn in tqdm.tqdm(os.listdir(d)):
         if fn == '.DS_Store': continue
         if 'dgdv' not in fn: continue
         if r != 'all':
@@ -141,7 +141,11 @@ def main():
     for n in range(1,nres+1):
         x = finalDf[(finalDf['chol'] == 15) & (finalDf['node'] == n)].drop(columns = ['node','chol']).to_numpy()
         y = finalDf[(finalDf['chol'] == 30) & (finalDf['node'] == n)].drop(columns = ['node','chol']).to_numpy()
-        pvals[n] = hotelling_t2(x,y)[2]
+        try:
+            pvals[n] = hotelling_t2(x,y)[2]
+        except np.linalg.LinAlgError:
+            print(':(',n)
+            pvals[n] = 1
 
 
     # PCA see which nodes move the most
