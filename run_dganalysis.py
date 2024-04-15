@@ -5,6 +5,7 @@ def main():
     gotnames = False
     gdds = []
     ldirs = ['../dynamic_graphlets/output/']
+    ldirs = ['../dynamic_graphlets/output/R1-15-closed-len50/dcounts','../dynamic_graphlets/output/R1-30-closed-len50/dcounts']
     print('starting analysis of all')
     for d in ldirs:
         for f in os.listdir(d):
@@ -46,9 +47,13 @@ def main():
     finalDf['start'] = finalDf['name'].str.split('-').str[3]
     finalDf['start'] = finalDf['start'].apply(int)
     print('done w pca')
-    pcpair =PCA_logistic_selection(finalDf,pca,nPCs)
+
+
+    pcpair = PCA_logistic_selection(finalDf,pca,nPCs)
+
     plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-all',PCs=pcpair)
     plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-colorbyrep',PCs=pcpair,colorby='replicate')
+
 
     x = finalDf[finalDf['chol'] == 15].drop(columns = ['name','chol','start','replicate']).to_numpy()
     y = finalDf[finalDf['chol'] == 30].drop(columns = ['name','chol','start','replicate']).to_numpy()

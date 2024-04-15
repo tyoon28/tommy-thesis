@@ -8,27 +8,95 @@ def main():
     # inefficient to do all of these in series but who cares.
     print('calculating persistence in RIN')
     mid_all = persistance()
+    np.save('mid_all.npy', mid_all)    # .npy extension is added if not given
 
-    print('calculating correlations between contacts')
-    correlation(mid_all)
 
-    print('calculating cholesterol contact landscape')
-    chol_contact()
+    # print('calculating correlations between contacts')
+    # correlation(mid_all)
 
-    print('calculating cholesterol contact landscape - binding sites')
-    chol_interactionlength()
+    # print('calculating cholesterol contact landscape')
+    # chol_contact()
 
-    print('calculating centralities')
-    centralities()
+    # print('calculating cholesterol contact landscape - binding sites')
+    # chol_interactionlength()
 
-    print('cholesterol threshold graph')
-    chol_thresh()
+    # print('calculating centralities')
+    # centralities()
+
+    # print('cholesterol threshold graph')
+    # chol_thresh()
 
 
 def correlation(mid_all):
     # perhaps change this to only middle stable contacts.
     # i'm only doing this for 30 mol%.
+    
     c = '30'
+    xtcs = []
+    for file in os.listdir(f'R1-30-closed'):
+        if file.endswith('.xtc'):
+            xtcs.append(f'R1-30-closed/'+file)
+    xtcs.sort(key=lambda x: int(x.split('-')[1]))
+    u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
+
+    lenwin = len(u.trajectory)
+
+    # store all contacts in mm
+    nedges = len(mid_all[0])
+    comp = np.zeros((len(u.trajectory[:lenwin])*3,nedges),dtype=bool) # comparison matrix for all replicates
+    i = 0
+
+    for r in ['R1','R2','R3']:
+        xtcs = []
+        for file in os.listdir(f'{r}-{c}-closed'):
+            if file.endswith('.xtc'):
+                xtcs.append(f'{r}-{c}-closed/'+file)
+        xtcs.sort(key=lambda x: int(x.split('-')[1]))
+        u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
+
+        contact_threshold = 6
+        sterols = u.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
+        protein = u.select_atoms('not resname CHOL and not resname POPC').residues
+
+        for ts in tqdm.tqdm(u.trajectory[:lenwin]):
+            frame = u.trajectory.frame
+            r = protein.atoms.center_of_mass(compound='residues')
+            mat = distances.contact_matrix(r, cutoff=6)
+            np.fill_diagonal(mat, 0)
+            # only look at middling edges.
+            comp[i] = mat[mid_all]
+            i += 1
+    
+    df = pd.DataFrame(comp)
+    df.sample(100)
+    df.sample(100)
+    df.sample(1000)
+    df.sample(10000)
+
+    cor = df.corr(method='pearson')
+    cor.to_csv('cormat-30.csv',index=False)
+    plot = sns.heatmap(cor, annot=True)
+    fig = plot.get_figure()
+    fig.savefig("cormat-30.png")
+
+    plt.clf()
+
+    G = nx.from_pandas_adjacency(cor)
+    selected_nodes = [n for n,v in G.nodes(data=True) if v['weight'] > 0.5]
+    H = G.subgraph(selected_nodes) 
+    nx.write_gexf(H,'correlationgraph.gexf')
+
+
+    
+
+    return
+
+
+def correlation2(mid_all):
+    # perhaps change this to only middle stable contacts.
+    # i'm only doing this for 30 mol%.
+    c = '30'
+    
 
     xtcs = []
     for file in os.listdir(f'R1-30-closed'):
@@ -37,10 +105,12 @@ def correlation(mid_all):
     xtcs.sort(key=lambda x: int(x.split('-')[1]))
     u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
 
+    lenwin = len(u.trajectory)
+
     # store all contacts in mm
     nedges = len(mid_all[0])
-    comp = np.zeros((len(u.trajectory),nedges),dtype=bool) # comparison matrix for 1 replicate
-    store = np.zeros((len(u.trajectory),nedges),dtype=bool) # average of all replicates
+    comp = np.zeros((len(u.trajectory[:lenwin]),nedges),dtype=bool) # comparison matrix for 1 replicate
+    store = np.zeros((len(u.trajectory[:lenwin]),nedges),dtype=bool) # average of all replicates
     for r in ['R1','R2','R3']:
         xtcs = []
         for file in os.listdir(f'{r}-{c}-closed'):
@@ -54,7 +124,7 @@ def correlation(mid_all):
         protein = u.select_atoms('not resname CHOL and not resname POPC').residues
 
         i = 0
-        for ts in tqdm.tqdm(u.trajectory):
+        for ts in tqdm.tqdm(u.trajectory[:lenwin]):
             frame = u.trajectory.frame
             r = protein.atoms.center_of_mass(compound='residues')
             mat = distances.contact_matrix(r, cutoff=6)
@@ -66,11 +136,23 @@ def correlation(mid_all):
     
     df = pd.DataFrame(store/3)
     cor = df.corr(method='pearson')
+    cor.to_csv('cormat-30.csv',index=False)
     plot = sns.heatmap(cor, annot=True)
     fig = plot.get_figure()
     fig.savefig("cormat-30.png")
 
+    plt.clf()
+
+    G = nx.from_pandas_adjacency(cor)
+    selected_nodes = [n for n,v in G.nodes(data=True) if v['weight'] > 0.5]
+    H = G.subgraph(selected_nodes) 
+    nx.write_gexf(H,'correlationgraph.gexf')
+
+
+    
+
     return
+
 
 def persistance():
     # did i spell it right?
@@ -116,7 +198,7 @@ def persistance():
     # plt.legend(['15 mol%','30 mol%'])
 
     plt.savefig('figure_edgepersistence.png')
-
+    
     return mid_all
 
 

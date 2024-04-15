@@ -268,7 +268,7 @@ def hypergraph_1_frame(u):
     '''hypergraph inferred using '''
     return
 
-def gephi_input(u):
+def gephi_input(u,t = 0.9):
     # for visualizing. not done
     res = u.select_atoms('not resname CHOL and not resname POPC')
     lenr = len(res.residues)
@@ -281,8 +281,8 @@ def gephi_input(u):
         np.fill_diagonal(mat, 0)
         edgesmat += mat
     
-    t = len(u.trajectory) * 0.9
-    G = nx.from_numpy_array((edgesmat >= t))
+    thresh = len(u.trajectory) * t
+    G = nx.from_numpy_array((edgesmat >= thresh))
     two = nx.shortest_path(G,265)
     for i in binding_sites('all'):
         try:
