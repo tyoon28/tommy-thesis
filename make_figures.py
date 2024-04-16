@@ -76,9 +76,9 @@ def correlation(mid_all,read=False):
 
     print('startgraph')
     G = nx.from_numpy_array(corrcoef_xy)
-    selected_nodes = [n for n,v in G.nodes(data=True) if v['weight'] > 0.25]
-    H = G.subgraph(selected_nodes) 
-    nx.write_gexf(H,'correlationgraph.gexf')
+    # selected_nodes = [n for n,v in G.nodes(data=True) if v['weight'] > 0.25]
+    # H = G.subgraph(selected_nodes) 
+    nx.write_gexf(G,'correlationgraph.gexf')
     print('donegraph')
 
     print('starclus')
