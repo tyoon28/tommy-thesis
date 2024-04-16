@@ -10,7 +10,7 @@ def main():
     # mid_all = persistance()
     # np.save('mid_all.npy', mid_all)    # .npy extension is added if not given
 
-    mid_all = np.load('y.npy')
+    mid_all = np.load('mid_all.npy')
     print('calculating correlations between contacts')
     correlation(mid_all)
 
