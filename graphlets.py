@@ -289,7 +289,7 @@ def graphlets_cholesterol_pca(r,to_csv=False):
     '''analyze orca output. r is R1-R3. Orca output must be in ../orca/output/{r}-<x>-closed'''
     #PCA
     if r == 'all':
-        ldirs = [f'../orca/output/{r}-{c}-closed-contact' for r in ['R1','R2','R3'] for c in ['15,30']]
+        ldirs = [f'../orca/output/{r}-{c}-closed-contact' for r in ['R1','R2','R3'] for c in ['15','30']]
     else:
         ldirs = [f'../orca/output/{r}-15-closed-contact',f'../orca/output/{r}-30-closed-contact']
     gdds = []
