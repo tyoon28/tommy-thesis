@@ -81,6 +81,13 @@ def correlation(mid_all,read=False):
     nx.write_gexf(H,'correlationgraph.gexf')
     print('donegraph')
 
+    print('starclus')
+    p = (corrcoef_xy > 0.25)
+    pp = np.where(p.any(axis=1))[0]
+    plot = sns.clustermap(corrcoef_xy[pp,:][:,pp])
+    fig = plot.get_figure()
+    fig.savefig("clustermap-30.png")
+
     print('startplot')
     plot = sns.heatmap(corrcoef_xy, annot=True)
     fig = plot.get_figure()
@@ -89,10 +96,7 @@ def correlation(mid_all,read=False):
 
     plt.clf()
 
-    
 
-
-    
     # print('done making df. calculating cormat')
     # a =df.sample(100).corr(method='pearson')
     # print(f'100 done in {time.time()-t}')
