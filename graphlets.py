@@ -87,7 +87,7 @@ def PCA_gdd(ldirs,to_csv = False):
     for i,j in enumerate(evr):
         if j > 0.99:
             nPCs = i + 1
-    pca = PCA(n_components=nPCs,alpha=0.05)
+    pca = PCA(n_components=nPCs)
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
              , columns = [f'PC{x}' for x in range(1,nPCs+1)])
