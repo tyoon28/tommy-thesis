@@ -23,7 +23,7 @@ def main():
         node_pca_analysis(r,output=True)
 
         print(f'doing individual nodes windowed for {r}')
-        node_PCA_windowed(r,ldirs,output=False,to_csv=True)
+        node_PCA_windowed(r,output=False,to_csv=True)
 
 
         
