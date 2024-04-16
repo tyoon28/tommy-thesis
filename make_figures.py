@@ -86,13 +86,11 @@ def correlation(mid_all,read=False):
     pp = np.where(p.any(axis=1))[0]
     print(len(pp))
     plot = sns.clustermap(corrcoef_xy[pp,:][:,pp])
-    fig = plot.get_figure()
-    fig.savefig("clustermap-30.png")
+    plot.savefig("clustermap-30.png")
 
     print('startplot')
     plot = sns.heatmap(corrcoef_xy, annot=True)
-    fig = plot.get_figure()
-    fig.savefig("cormat-30.png")
+    plot.savefig("cormat-30.png")
     print('doneplot')
 
     plt.clf()
