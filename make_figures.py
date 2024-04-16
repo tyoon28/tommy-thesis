@@ -43,6 +43,7 @@ def correlation(mid_all):
 
     # store all contacts in mm
     nedges = len(mid_all[0])
+    mid_all.shape
     comp = np.zeros((len(u.trajectory[:lenwin])*3,nedges),dtype=bool) # comparison matrix for all replicates
     i = 0
 
