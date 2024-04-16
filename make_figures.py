@@ -14,17 +14,17 @@ def main():
     print('calculating correlations between contacts')
     correlation(mid_all,read=True)
 
-    # print('calculating cholesterol contact landscape')
-    # chol_contact()
+    print('calculating cholesterol contact landscape')
+    chol_contact()
 
-    # print('calculating cholesterol contact landscape - binding sites')
-    # chol_interactionlength()
+    print('calculating cholesterol contact landscape - binding sites')
+    chol_interactionlength()
 
-    # print('calculating centralities')
-    # centralities()
+    print('calculating centralities')
+    centralities()
 
-    # print('cholesterol threshold graph')
-    # chol_thresh()
+    print('cholesterol threshold graph')
+    chol_thresh()
 
 
 def correlation(mid_all,read=False):
@@ -82,16 +82,16 @@ def correlation(mid_all,read=False):
     print('donegraph')
 
     print('starclus')
-    p = (corrcoef_xy > 0.25)
+    p = (abs(corrcoef_xy) > 0.25)
     pp = np.where(p.any(axis=1))[0]
     print(len(pp))
     plot = sns.clustermap(corrcoef_xy[pp,:][:,pp])
     plot.savefig("clustermap-30.png")
 
-    print('startplot')
-    plot = sns.heatmap(corrcoef_xy, annot=True)
-    plot.savefig("cormat-30.png")
-    print('doneplot')
+    # print('startplot')
+    # plot = sns.heatmap(corrcoef_xy, annot=True)
+    # plot.savefig("cormat-30.png")
+    # print('doneplot')
 
     plt.clf()
 
