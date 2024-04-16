@@ -339,6 +339,15 @@ def graphlets_cholesterol_pca(r,to_csv=False):
         finalDf = pd.concat([principalDf, df[[column,'name']]], axis = 1)
         plot_PCA_gdd(finalDf,f'{r}_graphlet_cholesterol_{column}',column = column)
 
+        # movement graph
+        result_group_chol= df.groupby(column)
+        total_by_chol = result_group_chol[[str(i) for i in range(73)]].mean()
+        tbc = np.linalg.norm(total_by_chol.values,axis=1)
+        # tbc = tbc-tbc[0]
+        total_by_chol['graphlet vector L2 norm'] = tbc
+        total_by_chol.plot(kind='bar' ,y='graphlet vector L2 norm',rot=0)
+        plt.savefig(f'{r}_movement_by_{column}')
+
 
 
     #bar chart to show prevalence of graphlet x in each cholesterol state
@@ -354,13 +363,7 @@ def graphlets_cholesterol_pca(r,to_csv=False):
 
     # bar chart to show mean euclidean distance from zero in each cholesterol state
     # do an ANOVA here...?
-    result_group_chol= df.groupby(['chol'])
-    total_by_chol = result_group_chol[[str(i) for i in range(73)]].mean()
-    tbc = np.linalg.norm(total_by_chol.values,axis=1)
-    tbc = tbc-tbc[0]
-    total_by_chol['graphlet vector L2 norm'] = tbc
-    total_by_chol.plot(kind='bar' ,y='graphlet vector L2 norm',rot=0)
-    plt.savefig(f'{r}_movement_by_chol')
+    
 
     if to_csv:
         df.to_csv('gdd_chol_forR.csv')
