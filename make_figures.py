@@ -1,7 +1,7 @@
 from graphlets import *
 from itertools import combinations
 import seaborn as sns
-
+import time
 
 
 def main():
@@ -72,12 +72,19 @@ def correlation(mid_all,read=False):
         df.to_csv('biggo.csv')
     else:   
         df = pd.read_csv('biggo.csv',index_col=0)
+    t = time.time()
     print('done making df. calculating cormat')
-    print('100',df.sample(100).corr(method='pearson'))
-    print('1000',df.sample(1000).corr(method='pearson'))
-    print('10000',df.sample(10000).corr(method='pearson'))
-    print('100000',df.sample(100000).corr(method='pearson'))
+    a =df.sample(100).corr(method='pearson')
+    print(f'100 done in {time.time()-t}')
+    a =df.sample(1000).corr(method='pearson')
+    print(f'1000 done in {time.time()-t}')
+    a =df.sample(10000).corr(method='pearson')
+    print(f'10000 done in {time.time()-t}')
+    a =df.sample(100000).corr(method='pearson')
+    print(f'100000 done in {time.time()-t}')
+
     return
+    
 
     cor = df.corr(method='pearson')\
     
