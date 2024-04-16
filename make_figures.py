@@ -71,7 +71,7 @@ def correlation(mid_all,read=False):
         df = pd.DataFrame(comp)
         df.to_csv('biggo.csv')
     else:   
-        df = pd.read_csv('big.csv',index_col=0)
+        df = pd.read_csv('biggo.csv',index_col=0)
     print('done making df. calculating cormat')
     print('100',df.sample(100).corr(method='pearson'))
     print('1000',df.sample(1000).corr(method='pearson'))
