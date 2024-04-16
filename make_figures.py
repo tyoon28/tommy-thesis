@@ -72,16 +72,38 @@ def correlation(mid_all,read=False):
         df.to_csv('biggo.csv')
     else:   
         df = pd.read_csv('biggo.csv',index_col=0)
+
     t = time.time()
-    print('done making df. calculating cormat')
-    a =df.sample(100).corr(method='pearson')
-    print(f'100 done in {time.time()-t}')
-    a =df.sample(1000).corr(method='pearson')
-    print(f'1000 done in {time.time()-t}')
-    a =df.sample(10000).corr(method='pearson')
-    print(f'10000 done in {time.time()-t}')
-    a =df.sample(100000).corr(method='pearson')
-    print(f'100000 done in {time.time()-t}')
+    print(f'a {time.time()-t}')
+    x = df.to_numpy()
+    y = x
+    print(f'b {time.time()-t}')
+    samples = x.shape[0]
+    centered_x = x - np.sum(x, axis=0, keepdims=True) / samples 
+    centered_y = y - np.sum(y, axis=0, keepdims=True) / samples 
+
+    print(f'c {time.time()-t}')
+    cov_xy = 1./(samples - 1) * np.dot(centered_x.T, centered_y)
+    var_x = 1./(samples - 1) * np.sum(centered_x**2, axis=0)
+    var_y = 1./(samples - 1) * np.sum(centered_y**2, axis=0)
+    print(f'd {time.time()-t}')
+    corrcoef_xy = cov_xy / np.sqrt(var_x[:, None] * var_y[None,:])
+    print(f'e {time.time()-t}')
+    
+    corrcoef_xy.to_csv("corcof.csv")
+    print(f'done {time.time()-t}')
+
+
+    
+    # print('done making df. calculating cormat')
+    # a =df.sample(100).corr(method='pearson')
+    # print(f'100 done in {time.time()-t}')
+    # a =df.sample(1000).corr(method='pearson')
+    # print(f'1000 done in {time.time()-t}')
+    # a =df.sample(10000).corr(method='pearson')
+    # print(f'10000 done in {time.time()-t}')
+    # a =df.sample(100000).corr(method='pearson')
+    # print(f'100000 done in {time.time()-t}')
 
     return
     
