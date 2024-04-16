@@ -738,7 +738,7 @@ def node_PCA_windowed(r,output=False,to_csv=False):
     # ldirs = [f'../orca/output/{r}-15-closed-uniform',f'../orca/output/{r}-30-closed-uniform']
 
     if r == 'all':
-        ldirs = [f'../orca/output/{r}-{c}-closed-contact' for r in ['R1','R2','R3'] for c in ['15,30']]
+        ldirs = [f'../orca/output/{r}-{c}-closed-contact' for r in ['R1','R2','R3'] for c in ['15','30']]
     else:
         ldirs = [f'../orca/output/{r}-15-closed-contact',f'../orca/output/{r}-30-closed-contact']
 
