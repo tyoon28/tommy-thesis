@@ -69,6 +69,7 @@ def correlation(mid_all):
             i += 1
     
     df = pd.DataFrame(comp)
+    df.to_csv('biggo.csv')
     print('done making df. calculating cormat')
     print('100',df.sample(100).corr(method='pearson'))
     print('1000',df.sample(1000).corr(method='pearson'))
