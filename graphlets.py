@@ -321,7 +321,7 @@ def graphlets_cholesterol_pca(r,to_csv=False):
     for column in ['chol','chol_bind']:
         features = list(map(str,range(73)))
         x = df.loc[:, features].values
-        y = df.loc[:,['chol']].values
+        y = df.loc[:,[column]].values
         x = StandardScaler().fit_transform(x)
 
         # take PCA components with 99% variance explained
@@ -336,10 +336,7 @@ def graphlets_cholesterol_pca(r,to_csv=False):
         principalDf = pd.DataFrame(data = principalComponents
                 , columns = [f'PC{x}' for x in range(1,nPCs+1)])
         
-        finalDf = pd.concat([principalDf, df[['chol','name']]], axis = 1)
-        finalDf['start'] = finalDf['name'].str.split('-').str[5].str[1:-4]
-        finalDf['start'] = finalDf['start'].apply(int)
-
+        finalDf = pd.concat([principalDf, df[[column,'name']]], axis = 1)
         plot_PCA_gdd(finalDf,f'{r}_graphlet_cholesterol_{column}')
 
 
