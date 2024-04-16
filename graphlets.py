@@ -109,7 +109,7 @@ def PCA_gdd(ldirs,to_csv = False):
     return df,finalDf,pca
 
 
-def plot_PCA_gdd(finalDf,out):
+def plot_PCA_gdd(finalDf,out,column = 'chol'):
     # PLOTTING PCA. only for 15 and 30
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1) 
@@ -119,7 +119,7 @@ def plot_PCA_gdd(finalDf,out):
     ax.set_ylabel('PC 2', fontsize = 15)
     ax.set_title('PCA graphlet degree distribution', fontsize = 20)
 
-    targets = sorted(finalDf['chol'].unique())
+    targets = sorted(finalDf[column].unique())
     color = iter(cm.rainbow(np.linspace(0, 1, len(targets))))
 
 
@@ -127,7 +127,7 @@ def plot_PCA_gdd(finalDf,out):
     #             , finalDf['PC2']
     #             , c = 'r')
     for target in targets:
-        indicesToKeep = finalDf['chol'] == target
+        indicesToKeep = finalDf[column] == target
         if len(indicesToKeep) > 10:
             c = next(color)
             ax.scatter(finalDf.loc[indicesToKeep, 'PC1']
@@ -337,7 +337,7 @@ def graphlets_cholesterol_pca(r,to_csv=False):
                 , columns = [f'PC{x}' for x in range(1,nPCs+1)])
         
         finalDf = pd.concat([principalDf, df[[column,'name']]], axis = 1)
-        plot_PCA_gdd(finalDf,f'{r}_graphlet_cholesterol_{column}')
+        plot_PCA_gdd(finalDf,f'{r}_graphlet_cholesterol_{column}',column = column)
 
 
 
