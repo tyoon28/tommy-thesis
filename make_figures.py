@@ -12,7 +12,7 @@ def main():
 
     mid_all = np.load('mid_all.npy')
     print('calculating correlations between contacts')
-    correlation(mid_all)
+    correlation(mid_all,read=True)
 
     # print('calculating cholesterol contact landscape')
     # chol_contact()
@@ -27,7 +27,7 @@ def main():
     # chol_thresh()
 
 
-def correlation(mid_all):
+def correlation(mid_all,read=False):
     # perhaps change this to only middle stable contacts.
     # i'm only doing this for 30 mol%.
     
@@ -45,31 +45,33 @@ def correlation(mid_all):
     nedges = len(mid_all[0])
     comp = np.zeros((len(u.trajectory[:lenwin])*3,nedges),dtype=bool) # comparison matrix for all replicates
 
+    if not read:
+        i = 0
+        for r in ['R1','R2','R3']:
+            xtcs = []
+            for file in os.listdir(f'{r}-{c}-closed'):
+                if file.endswith('.xtc'):
+                    xtcs.append(f'{r}-{c}-closed/'+file)
+            xtcs.sort(key=lambda x: int(x.split('-')[1]))
+            u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
 
-    i = 0
-    for r in ['R1','R2','R3']:
-        xtcs = []
-        for file in os.listdir(f'{r}-{c}-closed'):
-            if file.endswith('.xtc'):
-                xtcs.append(f'{r}-{c}-closed/'+file)
-        xtcs.sort(key=lambda x: int(x.split('-')[1]))
-        u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
+            contact_threshold = 6
+            sterols = u.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
+            protein = u.select_atoms('not resname CHOL and not resname POPC').residues
 
-        contact_threshold = 6
-        sterols = u.select_atoms(f'(resname CHOL and not (name RC1 or name RC2))').residues
-        protein = u.select_atoms('not resname CHOL and not resname POPC').residues
-
-        for ts in tqdm.tqdm(u.trajectory[:lenwin]):
-            frame = u.trajectory.frame
-            r = protein.atoms.center_of_mass(compound='residues')
-            mat = distances.contact_matrix(r, cutoff=6)
-            np.fill_diagonal(mat, 0)
-            # only look at middling edges.
-            comp[i] = mat[mid_all[0],mid_all[1]]
-            i += 1
-    
-    df = pd.DataFrame(comp)
-    df.to_csv('biggo.csv')
+            for ts in tqdm.tqdm(u.trajectory[:lenwin]):
+                frame = u.trajectory.frame
+                r = protein.atoms.center_of_mass(compound='residues')
+                mat = distances.contact_matrix(r, cutoff=6)
+                np.fill_diagonal(mat, 0)
+                # only look at middling edges.
+                comp[i] = mat[mid_all[0],mid_all[1]]
+                i += 1
+        
+        df = pd.DataFrame(comp)
+        df.to_csv('biggo.csv')
+    else:   
+        df = pd.read_csv('big.csv',index_col=0)
     print('done making df. calculating cormat')
     print('100',df.sample(100).corr(method='pearson'))
     print('1000',df.sample(1000).corr(method='pearson'))
