@@ -43,12 +43,11 @@ def correlation(mid_all):
 
     # store all contacts in mm
     nedges = len(mid_all[0])
-    print(mid_all.shape)
+    print(mid_all)
     comp = np.zeros((len(u.trajectory[:lenwin])*3,nedges),dtype=bool) # comparison matrix for all replicates
-    print(comp.shape)
+
 
     i = 0
-
     for r in ['R1','R2','R3']:
         xtcs = []
         for file in os.listdir(f'{r}-{c}-closed'):
@@ -67,6 +66,7 @@ def correlation(mid_all):
             mat = distances.contact_matrix(r, cutoff=6)
             np.fill_diagonal(mat, 0)
             # only look at middling edges.
+            print(comp.shape,mat.shape,mid_all.shape)
             comp[i] = mat[mid_all]
             i += 1
     
