@@ -6,13 +6,13 @@ import seaborn as sns
 
 def main():
     # inefficient to do all of these in series but who cares.
-    print('calculating persistence in RIN')
-    mid_all = persistance()
-    np.save('mid_all.npy', mid_all)    # .npy extension is added if not given
+    # print('calculating persistence in RIN')
+    # mid_all = persistance()
+    # np.save('mid_all.npy', mid_all)    # .npy extension is added if not given
 
-
-    # print('calculating correlations between contacts')
-    # correlation(mid_all)
+    mid_all = np.load('y.npy')
+    print('calculating correlations between contacts')
+    correlation(mid_all)
 
     # print('calculating cholesterol contact landscape')
     # chol_contact()
@@ -68,12 +68,15 @@ def correlation(mid_all):
             i += 1
     
     df = pd.DataFrame(comp)
-    df.sample(100)
-    df.sample(100)
-    df.sample(1000)
-    df.sample(10000)
+    print('done making df. calculating cormat')
+    print('100',df.sample(100).corr(method='pearson'))
+    print('1000',df.sample(1000).corr(method='pearson'))
+    print('10000',df.sample(10000).corr(method='pearson'))
+    print('100000',df.sample(100000).corr(method='pearson'))
+    return
 
-    cor = df.corr(method='pearson')
+    cor = df.corr(method='pearson')\
+    
     cor.to_csv('cormat-30.csv',index=False)
     plot = sns.heatmap(cor, annot=True)
     fig = plot.get_figure()

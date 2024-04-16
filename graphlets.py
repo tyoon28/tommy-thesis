@@ -60,7 +60,7 @@ def graphlet_degree_distribution(filename):
             gdd += l
     return gdd
 
-def PCA_gdd(ldirs):
+def PCA_gdd(ldirs,to_csv = False):
     # ldirs: list of directories containing separate classes of networks
     #ldirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-uniform','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-uniform']
     gdds = []
@@ -102,6 +102,9 @@ def PCA_gdd(ldirs):
     y = finalDf[finalDf['chol'] == 30].drop(columns = ['name','chol','start']).to_numpy()
 
     print(f'hotelling_p = {hotelling_t2(x,y)[2]}')
+
+    if to_csv:
+        df.to_csv('gdd_all_forR.csv')
 
     return df,finalDf,pca
 
@@ -282,7 +285,7 @@ def output_graphs_graphlets_cholesterol(replicate,thresh=0.4):
         print(f'done with cholesterol graphs for {replicate}-{i}')
     return
 
-def graphlets_cholesterol_pca(r):
+def graphlets_cholesterol_pca(r,to_csv=False):
     '''analyze orca output. r is R1-R3. Orca output must be in ../orca/output/{r}-<x>-closed'''
     #PCA
     if r == 'all':
@@ -361,6 +364,9 @@ def graphlets_cholesterol_pca(r):
     total_by_chol['graphlet vector L2 norm'] = tbc
     total_by_chol.plot(kind='bar' ,y='graphlet vector L2 norm',rot=0)
     plt.savefig(f'{r}_movement_by_chol')
+
+    if to_csv:
+        df.to_csv('gdd_chol_forR.csv')
     return
 
 def output_single_frame_graph(u,frame,basename):
@@ -727,7 +733,7 @@ def wholenetwork_stable_PCA():
     return finalDf,pca
 
 
-def node_PCA_windowed(r,output=False):
+def node_PCA_windowed(r,output=False,to_csv=False):
     
     # ldirs = [f'../orca/output/{r}-15-closed-uniform',f'../orca/output/{r}-30-closed-uniform']
 
@@ -834,7 +840,8 @@ def node_PCA_windowed(r,output=False):
 
     dd=d_s.to_dict()
     if output: dd_to_csv(dd,f'{r}-nodepca',u)
-
+    if to_csv:
+        df.to_csv('nodepca_windowed_forR.csv')
 
     return dd
 
