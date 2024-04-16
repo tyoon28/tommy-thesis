@@ -71,7 +71,14 @@ def correlation(mid_all,read=False):
         df = pd.DataFrame(comp)
         df.to_csv('biggo.csv')
     else:   
+        t = time.time()
+        print('start')
         df = pd.read_csv('biggo.csv',index_col=0)
+        # with open("big.csv") as f:
+        #     ncols = len(f.readline().split(','))
+        # x = np.loadtxt("big.csv",
+        #          delimiter=",", dtype=bool,skiprows=1,usecols=range(1,ncols+1))
+
 
     t = time.time()
     print(f'a {time.time()-t}')
@@ -90,8 +97,24 @@ def correlation(mid_all,read=False):
     corrcoef_xy = cov_xy / np.sqrt(var_x[:, None] * var_y[None,:])
     print(f'e {time.time()-t}')
     
-    corrcoef_xy.to_csv("corcof.csv")
+    np.save('cormat-30.npy', corrcoef_xy)
     print(f'done {time.time()-t}')
+
+
+    print('startplot')
+    plot = sns.heatmap(corrcoef_xy, annot=True)
+    fig = plot.get_figure()
+    fig.savefig("cormat-30.png")
+    print('doneplot')
+
+    plt.clf()
+
+    print('startgraph')
+    G = nx.from_numpy_array(corrcoef_xy)
+    selected_nodes = [n for n,v in G.nodes(data=True) if v['weight'] > 0.25]
+    H = G.subgraph(selected_nodes) 
+    nx.write_gexf(H,'correlationgraph.gexf')
+    print('donegraph')
 
 
     
