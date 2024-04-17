@@ -934,7 +934,7 @@ def orbits_to_graphlets(df):
     
     cols = ['chol']
     for i in d:
-        if i in df.columns:
+        if d[i][0] in df.columns:
             df[f'G{i}'] = df[d[i][0]]/d[i][1]
             cols.append(f'G{i}')
 
