@@ -878,7 +878,7 @@ def logistic_selection(df,r):
     if r =='all':
         graphlet_map = {2:1,3:8,4:15}
         for graphlet_size in range(2,5):
-            dd = orbits_to_graphlets(df[list(range(graphlet_map[graphlet_size]))])
+            dd = orbits_to_graphlets(df[list(range(graphlet_map[graphlet_size]))+['chol']])
             X = dd.drop('chol',axis=1)
             y = (dd['chol'] - 15 )/15
             X_train, X_test, y_train, y_test = train_test_split(X,y , 
