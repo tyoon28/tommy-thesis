@@ -314,7 +314,7 @@ def chol_interactionlength():
 
 
             rog = Cholesterol_contact(u)
-            rog.run(start=0,stop=1000,verbose=True)
+            rog.run(start=0,verbose=True)
 
             all_interactions = [] # list of durations of all interactions
             bs_vs_rest = [[],[]] # 0: durations of interactions that touch a binding site; 1: others
