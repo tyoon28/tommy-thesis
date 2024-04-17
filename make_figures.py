@@ -400,7 +400,7 @@ def centralities():
                     xtcs.append(f'{r}-{c}-closed/'+file)
             xtcs.sort(key=lambda x: int(x.split('-')[1]))
             u = mda.Universe(f'{r}-{c}-closed/{r}-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
-            G = get_consensus_graph()
+            G = get_consensus_graph(u)
             betweenness = nx.betweenness_centrality(G)
             closeness = nx.closeness_centrality(G)
             eigenvector = nx.eigenvector_centrality_numpy(G)

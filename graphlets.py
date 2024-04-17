@@ -105,6 +105,7 @@ def PCA_gdd(ldirs,to_csv = False):
 
     if to_csv:
         df.to_csv('gdd_all_forR.csv')
+        orbits_to_graphlets(df).to_csv('gdd_all_reduced_forR.csv')
 
     return df,finalDf,pca
 
