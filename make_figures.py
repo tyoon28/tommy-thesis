@@ -313,7 +313,7 @@ def chol_interactionlength():
                 if file.endswith('.xtc'):
                     xtcs.append(f'{r}-{c}-closed/'+file)
             xtcs.sort(key=lambda x: int(x.split('-')[1]))
-            u = mda.Universe(f'{r}-{c}-closed{r}-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
+            u = mda.Universe(f'{r}-{c}-closed/{r}-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
 
 
             rog = Cholesterol_contact(u)
