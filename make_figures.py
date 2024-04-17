@@ -10,9 +10,9 @@ def main():
     # mid_all = persistance()
     # np.save('mid_all.npy', mid_all)    # .npy extension is added if not given
 
-    mid_all = np.load('mid_all.npy')
-    print('calculating correlations between contacts')
-    correlation(mid_all,read=True)
+    # mid_all = np.load('mid_all.npy')
+    # print('calculating correlations between contacts')
+    # correlation(mid_all,read=True)
 
     print('calculating cholesterol contact landscape')
     chol_contact()
