@@ -289,10 +289,7 @@ def chol_contact():
                 occupancy = np.sum(np.any(z,0))
                 occupancy2 = np.sum(np.any(z,1))
                 y[u.trajectory.frame] = occupancy
-                y2[u.trajectory.frame] = occupancy2
 
-            y2_subsample = y2[::100]
-            t_subsample = t[::100]
             
             plt.plot(t,y,color)
             avg += y
@@ -317,21 +314,31 @@ def chol_interactionlength():
 
 
             rog = Cholesterol_contact(u)
-            rog.run(start=0,verbose=True)
+            rog.run(start=0,stop=1000,verbose=True)
 
             all_interactions = [] # list of durations of all interactions
             bs_vs_rest = [[],[]] # 0: durations of interactions that touch a binding site; 1: others
             for ch in rog.results:
                 for i in range(len(rog.results[ch]['binding_events'])):
                     start,end = rog.results[ch]['binding_events'][i]
-                    dur = end-start
+                    dur = (end-start+1)* 0.2
 
-                    bound = rog.results[ch]['binding_events_actual'][i]
+                    bound = int((start + end)/2) in rog.results[ch]['binding_events_actual']
                     if bound: ind = 0
                     else: ind = 1
                     bs_vs_rest[ind].append(dur)
                     all_interactions.append(dur)
-            
+
+        bscounts, bsbins = np.histogram(bs_vs_rest[0], 50)
+        restcounts, restbins = np.histogram(bs_vs_rest[1], 50)
+
+        plt.plot(bsbins[:-1], bscounts)
+        plt.plot(restbins[:-1], restcounts)
+        plt.xlabel('Interaction length (ns)')
+        plt.ylabel('count')
+        plt.legend(['binding site interactions','other interactions'])
+        plt.savefig(f'figure_cholesterol_interactionlength_hist-{c}', dpi=300, bbox_inches='tight')    
+        plt.clf()
         avg_bs = np.mean(bs_vs_rest[0])
         avg_rest = np.mean(bs_vs_rest[1])
 
@@ -343,15 +350,15 @@ def chol_interactionlength():
     df = pd.DataFrame({'Binding site': data[0], 'Non-binding site': data[1]}, index=index)
     ax = df.plot.bar(rot=0)
     plt.xlabel('Cholesterol concentration')
-    plt.ylabel('Average Interaction length (frames (change this to ns))')
+    plt.ylabel('Average Interaction length (ns)')
     plt.savefig('figure_cholesterol_interactionlength', dpi=300, bbox_inches='tight')
-    plt.clear()
+    plt.clf()
 
 
     plt.hist([bs_vs_rest[0],bs_vs_rest[1]], stacked=True, density=True)
     plt.legend(['Binding sites','All other residues'])
     plt.savefig('figure_cholesterol_interactionlength2', dpi=300, bbox_inches='tight')
-    plt.clear()
+    plt.clf()
 
     return
 
