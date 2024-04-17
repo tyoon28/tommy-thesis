@@ -850,8 +850,9 @@ def node_PCA_windowed(r,output=False,to_csv=False):
 
 def logistic_selection(df,r):
     # for gdds.
-    X = df[list(range(73))]
-    y = (df['chol'] - 15 )/15
+    dd = orbits_to_graphlets(df)
+    X = dd.drop('chol',axis=1)
+    y = (dd['chol'] - 15 )/15
     X_train, X_test, y_train, y_test = train_test_split(X,y , 
                                     random_state=104,  
                                     train_size=0.8,  
@@ -877,8 +878,9 @@ def logistic_selection(df,r):
     if r =='all':
         graphlet_map = {2:1,3:8,4:15}
         for graphlet_size in range(2,5):
-            X = df[list(range(graphlet_map[graphlet_size]))]
-            y = (df['chol'] - 15 )/15
+            dd = orbits_to_graphlets(df[list(range(graphlet_map[graphlet_size]))])
+            X = dd.drop('chol',axis=1)
+            y = (dd['chol'] - 15 )/15
             X_train, X_test, y_train, y_test = train_test_split(X,y , 
                                             random_state=104,  
                                             train_size=0.8,  
@@ -921,3 +923,19 @@ def logistic_selection(df,r):
     # rf_feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
     # plt.savefig(f'{r}-gdd-varimportance-rf.png')
     return
+
+
+def orbits_to_graphlets(df):
+    # dict Graphlet# : (orbit#,orbit factor)
+    d = {0:(0,2),1:(2,1),2:(3,3),3:(5,2),4:(7,1),5:(8,4),6:(11,1),7:(13,2),
+         8:(14,4),9:(17,1),10:(21,1),11:(23,1),12:(25,1),13:(27,1),14:(33,1),
+         15:(34,5),16:(35,1),17:(39,1),18:(44,1),19:(45,1),20:(50,2),21:(52,1),
+         22:(55,2),23:(56,1),24:(61,1),25:(62,1),26:(65,1),27:(69,1),28:(70,2),29:(72,5)}
+    
+    cols = [f'G{i}' for i in d.keys()] + ['chol']
+    for i in d:
+        if i in df.columns:
+            df[f'G{i}'] = df[d[i][0]]/d[i][1]
+
+    dd = df[cols]
+    return dd
