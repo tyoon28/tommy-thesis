@@ -14,8 +14,8 @@ def main():
     # print('calculating correlations between contacts')
     # correlation(mid_all,read=True)
 
-    print('calculating cholesterol contact landscape')
-    chol_contact()
+    # print('calculating cholesterol contact landscape')
+    # chol_contact()
 
     print('calculating cholesterol contact landscape - binding sites')
     chol_interactionlength()
@@ -313,7 +313,7 @@ def chol_interactionlength():
                 if file.endswith('.xtc'):
                     xtcs.append(f'{r}-{c}-closed/'+file)
             xtcs.sort(key=lambda x: int(x.split('-')[1]))
-            u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
+            u = mda.Universe(f'{r}-{c}-closed{r}-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
 
 
             rog = Cholesterol_contact(u)
