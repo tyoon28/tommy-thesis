@@ -242,7 +242,14 @@ def persistance():
 
 def chol_contact():
     contact_threshold = 6
-    u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb','R1-30-closed/R1-0-1000-3JYC.xtc')
+
+    xtcs = []
+    for file in os.listdir('R1-15-closed'):
+        if file.endswith('.xtc'):
+            xtcs.append('R1-15-closed/'+file)
+    xtcs.sort(key=lambda x: int(x.split('-')[1]))
+    u = mda.Universe('R1-15-closed/R1-0-start-membrane-3JYC.pdb',*xtcs,continuous= True)
+
     for c in ['15','30']:
         if c == '15': 
             color = 'cyan'
