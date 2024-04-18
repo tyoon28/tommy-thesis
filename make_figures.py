@@ -18,7 +18,7 @@ def main():
     # chol_contact()
 
     print('calculating cholesterol contact landscape - binding sites')
-    chol_interactionlength()
+    chol_interactionlength() # change this to have dots, like a violin plot
 
     print('calculating centralities')
     centralities()

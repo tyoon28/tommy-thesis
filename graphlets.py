@@ -855,6 +855,14 @@ def node_PCA_windowed(r,output=False,to_csv=False):
     if to_csv:
         df.to_csv('nodepca_windowed_forR.csv')
 
+    print('looking for G10')
+    dic = {}
+    for n in range(1,1349):
+        d = df.loc[df['node'] == n]
+        d[n] = np.mean(d[21])
+    dd_to_csv(dic,f'{r}-nodeG10',u)
+    color_by_centrality(dic,f'{r}-nodeG10')
+    
     return dd
 
 
