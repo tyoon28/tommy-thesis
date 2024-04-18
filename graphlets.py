@@ -333,7 +333,7 @@ def graphlets_cholesterol_pca(r,to_csv=False):
         principalComponents = pca.fit_transform(x)
         evr = pca.explained_variance_ratio_.cumsum()
         for i,j in enumerate(evr):
-            if j > 0.99:
+            if j > 0.90:
                 nPCs = i + 1
         pca = PCA(n_components=nPCs)
         principalComponents = pca.fit_transform(x)
@@ -358,8 +358,7 @@ def graphlets_cholesterol_pca(r,to_csv=False):
 
         f = pd.DataFrame({'G10':total_by_chol,'std':std})
         f.plot(kind='bar' ,y='G10',yerr='std',rot=0)
-        plt.show()
-        plt.savefig(f'{r}_movement_by_{column}')
+        plt.savefig(f'{r}G10_by_{column}')
 
 
 
