@@ -51,11 +51,13 @@ def main():
     # node_pca_analysis(r,output=True)
 
     print(f'doing individual nodes windowed for all')
-    node_PCA_windowed(r,output=False,to_csv=True)
+    node_PCA_windowed(r,output=True,to_csv=True)
     # TODO: which nodes are highly predictive of cholesterol condition?
 
     # print(f'doing individual nodes with cholesterol for {r}')
-    # node_pca_analysis(r)
+    # node_chol_analysis(r,node)
+
+    print('done')
 
 
 
