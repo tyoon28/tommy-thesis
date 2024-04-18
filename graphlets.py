@@ -798,8 +798,8 @@ def node_PCA_windowed(r,output=False,to_csv=False):
         y_pred = model.predict(X_test)
         accur[n] = model.score(X_test, y_test)
 
-        x = d[d['chol'] == 15].drop(columns = ['name','node','chol','state']).to_numpy()
-        y = d[d['chol'] == 30].drop(columns = ['name','node','chol','state']).to_numpy()
+        x = X.to_numpy()
+        y = y.to_numpy()
         ps[n] = hotelling_t2(x,y)[2]
 
 
