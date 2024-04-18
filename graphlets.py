@@ -799,9 +799,7 @@ def node_PCA_windowed(r,output=False,to_csv=False):
         y_pred = model.predict(X_test)
         accur[n] = model.score(X_test, y_test)
 
-        x = d[d['chol'] == 15].drop(columns = ['name','node','chol','state']).to_numpy().astype(int)
-        y = d[d['chol'] == 30].drop(columns = ['name','node','chol','state']).to_numpy().astype(int)
-        ps[n] = hotelling_t2(x,y)[2]
+        
 
 
         # coefficients = model.coef_[0]
@@ -851,6 +849,11 @@ def node_PCA_windowed(r,output=False,to_csv=False):
                 )
         plt.tight_layout()
         plt.savefig(f'{r}-nodemovement-windowed.png')
+    for n in range(1,1349):
+        d = finalDf.loc[finalDf['node'] == n]
+        x = d[d['chol'] == 15].drop(columns = ['name','node','chol']).to_numpy().astype(int)
+        y = d[d['chol'] == 30].drop(columns = ['name','node','chol']).to_numpy().astype(int)
+        ps[n] = hotelling_t2(x,y)[2]
 
     plt.clf()
     plt.plot(distance_by_node.to_list(),accur.values(),'o')
