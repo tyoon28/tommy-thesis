@@ -780,6 +780,7 @@ def node_PCA_windowed(r,output=False,to_csv=False):
     #logit models        
     features = list(range(73))
     accur = {}
+    ps = {}
     for n in range(1,1349):
         d = df.loc[df['node'] == n]
         
@@ -798,8 +799,8 @@ def node_PCA_windowed(r,output=False,to_csv=False):
         y_pred = model.predict(X_test)
         accur[n] = model.score(X_test, y_test)
 
-        x = X.to_numpy()
-        y = y.to_numpy()
+        x = d[d['chol'] == 15].drop(columns = ['name','node','chol','state']).to_numpy().astype(int)
+        y = d[d['chol'] == 30].drop(columns = ['name','node','chol','state']).to_numpy().astype(int)
         ps[n] = hotelling_t2(x,y)[2]
 
 
@@ -814,7 +815,7 @@ def node_PCA_windowed(r,output=False,to_csv=False):
 
     
 
-    x = df.loc[:, features].values
+    x = df.loc[:, features].values.astype(int)
     y = df.loc[:,['chol']].values
     x = StandardScaler().fit_transform(x)
     pca = PCA()
@@ -825,7 +826,7 @@ def node_PCA_windowed(r,output=False,to_csv=False):
             nPCs = i + 1
             break
 
-    ps = {}
+    
     pca = PCA(n_components=nPCs)
     print(f'using {nPCs} components')
     principalComponents = pca.fit_transform(x)
