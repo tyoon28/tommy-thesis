@@ -797,6 +797,12 @@ def node_PCA_windowed(r,output=False,to_csv=False):
         s = model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         accur[n] = model.score(X_test, y_test)
+
+        x = d[d['chol'] == 15].drop(columns = ['name','node','chol','state']).to_numpy()
+        y = d[d['chol'] == 30].drop(columns = ['name','node','chol','state']).to_numpy()
+        ps[n] = hotelling_t2(x,y)[2]
+
+
         # coefficients = model.coef_[0]
         # coefficients = np.std(X, 0)*model.coef_[0]
 
@@ -805,6 +811,8 @@ def node_PCA_windowed(r,output=False,to_csv=False):
         # feature_importance = feature_importance.iloc[-20:]
         # feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
         # plt.savefig(f'{r}-gdd-varimportance-logit.png')
+
+    
 
     x = df.loc[:, features].values
     y = df.loc[:,['chol']].values
@@ -816,6 +824,8 @@ def node_PCA_windowed(r,output=False,to_csv=False):
         if j > 0.99:
             nPCs = i + 1
             break
+
+    ps = {}
     pca = PCA(n_components=nPCs)
     print(f'using {nPCs} components')
     principalComponents = pca.fit_transform(x)
@@ -840,6 +850,7 @@ def node_PCA_windowed(r,output=False,to_csv=False):
                 )
         plt.tight_layout()
         plt.savefig(f'{r}-nodemovement-windowed.png')
+
     plt.clf()
     plt.plot(distance_by_node.to_list(),accur.values(),'o')
     plt.xlabel('distance')
@@ -859,6 +870,7 @@ def node_PCA_windowed(r,output=False,to_csv=False):
     for n in range(1,1349):
         d = df.loc[df['node'] == n]
         d[n] = np.mean(d[21])
+    dd_to_csv(ps,f'{r}-nodeps',u)
     dd_to_csv(dic,f'{r}-nodeG10',u)
     color_by_centrality(dic,f'{r}-nodeG10')
     
