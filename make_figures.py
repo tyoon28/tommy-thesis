@@ -307,6 +307,9 @@ def chol_interactionlength():
     # lengths of interactions of binding sites vs with rest of protein
     data = []
     for c in ['15','30']:
+        all_interactions = [] # list of durations of all interactions
+        bs_vs_rest = [[],[]] # 0: durations of interactions that touch a binding site; 1: others
+
         for r in ['R1','R2','R3']:
             xtcs = []
             for file in os.listdir(f'{r}-{c}-closed'):
@@ -319,8 +322,6 @@ def chol_interactionlength():
             rog = Cholesterol_contact(u)
             rog.run(start=0,verbose=True)
 
-            all_interactions = [] # list of durations of all interactions
-            bs_vs_rest = [[],[]] # 0: durations of interactions that touch a binding site; 1: others
             for ch in rog.results:
                 for i in range(len(rog.results[ch]['binding_events'])):
                     start,end = rog.results[ch]['binding_events'][i]
