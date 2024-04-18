@@ -62,7 +62,7 @@ def graphlet_degree_distribution(filename):
 
 def PCA_gdd(ldirs,to_csv = False):
     # ldirs: list of directories containing separate classes of networks
-    #ldirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-uniform','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-uniform']
+    # ldirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-uniform','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-uniform']
     gdds = []
     for d in ldirs:
         for f in os.listdir(d):
@@ -87,6 +87,7 @@ def PCA_gdd(ldirs,to_csv = False):
     for i,j in enumerate(evr):
         if j > 0.99:
             nPCs = i + 1
+    print(f'using {nPCs} components')
     pca = PCA(n_components=nPCs)
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
@@ -105,7 +106,9 @@ def PCA_gdd(ldirs,to_csv = False):
 
     if to_csv:
         df.to_csv('gdd_all_forR.csv')
-        orbits_to_graphlets(df).to_csv('gdd_all_reduced_forR.csv')
+        dd = orbits_to_graphlets(df)
+        dd.to_csv('gdd_all_reduced_forR.csv')
+
 
     return df,finalDf,pca
 
@@ -347,6 +350,15 @@ def graphlets_cholesterol_pca(r,to_csv=False):
         # tbc = tbc-tbc[0]
         total_by_chol['graphlet vector L2 norm'] = tbc
         total_by_chol.plot(kind='bar' ,y='graphlet vector L2 norm',rot=0)
+        plt.savefig(f'{r}_movement_by_{column}')
+
+        result_group_chol= df.groupby(column)
+        total_by_chol = result_group_chol[21].mean().values
+        std = result_group_chol[21].std().values
+
+        f = pd.DataFrame({'G10':total_by_chol,'std':std})
+        f.plot(kind='bar' ,y='G10',yerr='std',rot=0)
+        plt.show()
         plt.savefig(f'{r}_movement_by_{column}')
 
 
@@ -735,7 +747,6 @@ def wholenetwork_stable_PCA():
 
 
 def node_PCA_windowed(r,output=False,to_csv=False):
-    
     # ldirs = [f'../orca/output/{r}-15-closed-uniform',f'../orca/output/{r}-30-closed-uniform']
 
     if r == 'all':
@@ -834,12 +845,12 @@ def node_PCA_windowed(r,output=False,to_csv=False):
     plt.plot(distance_by_node.to_list(),accur.values(),'o')
     plt.xlabel('distance')
     plt.ylabel('accuracy')
-    
-
-
+    plt.savefig(f'{r}-nodemovement-distance-accuracy.png')
     d_s = distance_by_node.sort_values()
 
     dd=d_s.to_dict()
+
+    # df.loc[df[19] != 0, 'A']
     if output: dd_to_csv(dd,f'{r}-nodepca',u)
     if to_csv:
         df.to_csv('nodepca_windowed_forR.csv')

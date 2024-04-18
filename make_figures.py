@@ -73,20 +73,23 @@ def correlation(mid_all,read=False):
     else:   
         t = time.time()
         corrcoef_xy = np.load('cormat-30.npy')
+    print(corrcoef_xy.shape)
+    print(np.count_nonzero(abs(corrcoef_xy) > 0.5))
+    print(np.count_nonzero(abs(corrcoef_xy) > 0.25))
 
-    print('startgraph')
-    G = nx.from_numpy_array(corrcoef_xy)
-    # selected_nodes = [n for n,v in G.nodes(data=True) if v['weight'] > 0.25]
-    # H = G.subgraph(selected_nodes) 
-    nx.write_gexf(G,'correlationgraph.gexf')
-    print('donegraph')
+    # print('startgraph')
+    # G = nx.from_numpy_array(corrcoef_xy)
+    # # selected_nodes = [n for n,v in G.nodes(data=True) if v['weight'] > 0.25]
+    # # H = G.subgraph(selected_nodes) 
+    # nx.write_gexf(G,'correlationgraph.gexf')
+    # print('donegraph')
 
-    print('starclus')
-    p = (abs(corrcoef_xy) > 0.25)
-    pp = np.where(p.any(axis=1))[0]
-    print(len(pp))
-    plot = sns.clustermap(corrcoef_xy[pp,:][:,pp])
-    plot.savefig("clustermap-30.png")
+    # print('starclus')
+    # p = (abs(corrcoef_xy) > 0.25)
+    # pp = np.where(p.any(axis=1))[0]
+    # print(len(pp))
+    # plot = sns.clustermap(corrcoef_xy[pp,:][:,pp])
+    # plot.savefig("clustermap-30.png")
 
     # print('startplot')
     # plot = sns.heatmap(corrcoef_xy, annot=True)

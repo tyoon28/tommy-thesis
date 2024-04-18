@@ -5,8 +5,8 @@ import warnings
 
 #TODO: after inspection look for G14 in response to choleseterol
 def main():
-    # for r in ['R1','R2','R3']:
-    #     print(f'working on {r}')
+    for r in ['R1','R2','R3']:
+        print(f'working on {r}')
     #     ldirs = [f'../orca/output/{r}-15-closed',f'../orca/output/{r}-30-closed']
 
     #     df,finalDf,pca = PCA_gdd(ldirs)
@@ -16,8 +16,8 @@ def main():
     #     print(f'calculating variable importance for {r}')
     #     logistic_selection(df,r)
 
-    #     print(f'doing cholesterol plots for {r}')
-    #     graphlets_cholesterol_pca(r)
+        print(f'doing cholesterol plots for {r}')
+        graphlets_cholesterol_pca(r)
 
     #     print(f'doing individual nodes for {r}')
     #     node_pca_analysis(r,output=True)
