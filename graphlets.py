@@ -353,8 +353,8 @@ def graphlets_cholesterol_pca(r,to_csv=False):
         plt.savefig(f'{r}_movement_by_{column}')
 
         result_group_chol= df.groupby(column)
-        total_by_chol = result_group_chol[21].mean().values
-        std = result_group_chol[21].std().values
+        total_by_chol = result_group_chol['21'].mean().values
+        std = result_group_chol['21'].std().values
 
         f = pd.DataFrame({'G10':total_by_chol,'std':std})
         f.plot(kind='bar' ,y='G10',yerr='std',rot=0)
