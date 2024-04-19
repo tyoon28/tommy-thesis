@@ -1113,4 +1113,5 @@ def replicate_investigation(ldirs):
     ax.grid()
     ax.yaxis.set_major_locator(AutoLocator())
     ax.xaxis.set_major_locator(AutoLocator())
-    plt.savefig('replicates_pca.png')
+    plt.savefig('all_replicates_pca.png')
+    return
