@@ -7,7 +7,7 @@ import warnings
 def main():
     for r in ['R1','R2','R3']:
         print(f'working on {r}')
-    #     ldirs = [f'../orca/output/{r}-15-closed',f'../orca/output/{r}-30-closed']
+        ldirs = [f'../orca/output/{r}-15-closed',f'../orca/output/{r}-30-closed']
 
         df,finalDf,pca = PCA_gdd(ldirs)
         print(f'making PCA plots for {r}')
@@ -53,7 +53,7 @@ def main():
     print(f'doing individual nodes windowed for all')
     node_PCA_windowed(r,output=True,to_csv=True)
 
-    
+
     # TODO: which nodes are highly predictive of cholesterol condition?
 
     # print(f'doing individual nodes with cholesterol for {r}')
