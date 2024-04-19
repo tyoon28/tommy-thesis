@@ -798,6 +798,7 @@ def node_PCA_windowed(r,output=False,to_csv=False):
 
     #logit models        
     features = list(range(73))
+    df[features] = df[features].astype(int)
     accur = {}
     ps = {}
     for n in range(1,1349):
@@ -870,9 +871,32 @@ def node_PCA_windowed(r,output=False,to_csv=False):
         plt.savefig(f'{r}-nodemovement-windowed.png')
     
     for n in range(1,1349):
-        d = finalDf.loc[finalDf['node'] == n]
-        x = d[d['chol'] == 15].drop(columns = ['name','node','chol']).to_numpy().astype(int)
-        y = d[d['chol'] == 30].drop(columns = ['name','node','chol']).to_numpy().astype(int)
+        d = df.loc[df['node'] == n]
+        d = d.reset_index()
+        x = d.loc[:, features].values.astype(int)
+        y = d.loc[:,['chol']].values
+        x = StandardScaler().fit_transform(x)
+        pca = PCA()
+        principalComponents = pca.fit_transform(x)
+        evr = pca.explained_variance_ratio_.cumsum()
+        for i,j in enumerate(evr):
+            if j > 0.99:
+                nPCs = i+1
+                break
+
+        
+        pca = PCA(n_components=nPCs)
+        print(f'using {nPCs} components')
+        principalComponents = pca.fit_transform(x)
+        principalDf = pd.DataFrame(data = principalComponents,
+                                    columns = [f'PC{x}' for x in range(1,nPCs+1)])
+
+        fdf = pd.concat([principalDf, d[['chol','name','node']]], axis = 1)
+
+
+
+        x = fdf[fdf['chol'] == 15].drop(columns = ['name','node','chol']).to_numpy().astype(int)
+        y = fdf[fdf['chol'] == 30].drop(columns = ['name','node','chol']).to_numpy().astype(int)
         try:
             ps[n] = hotelling_t2(x,y)[2]
         except np.linalg.LinAlgError:

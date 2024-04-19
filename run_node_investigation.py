@@ -3,7 +3,8 @@ from graphlets import *
 def main():
     d = {} # key: residue; item: dict of concentrations with dict of contacts and frequencies
      
-    residues = None # DON"T RUN WITHOUT SETTING RESIDEUSE
+    residues = [265] # DON"T RUN WITHOUT SETTING RESIDEUSE
+    
     for i in ['30','15']:
         for r in ['R1','R2','R3']:
             d[i] = {}
@@ -16,16 +17,17 @@ def main():
 
             protein = u.select_atoms('not resname CHOL and not resname POPC')
             for res in residues:
+                resi = resid_to_md_subunits(res)-1
                 # record frequency of each unique set of contacts
                 d[i][res] = {}
-                print(res,i)
+
                 for ts in tqdm.tqdm(u.trajectory):
                     frame = u.trajectory.frame
                     r_compound = protein.atoms.center_of_mass(compound='residues')
                     mat = distances.contact_matrix(r_compound, cutoff=6)
                     np.fill_diagonal(mat, 0) 
                     # +/- 1 from resid for proper indexing
-                    nz = np.nonzero(mat[res-1])[0] +1
+                    nz = np.nonzero(mat[resi])[0] + 1
                     fs = frozenset(nz)
                     if fs in d[i][res].keys():
                         d[i][res][fs] += 1 
@@ -56,5 +58,60 @@ def main():
         d_diff_filtered[res] = {k: v for k, v in sorted(d_diff_filtered[res].items(), key=lambda item: item[1])}
 
 
+
+    fig, axs = plt.subplots(2,3,figsize=(16,9), gridspec_kw={'height_ratios': [1, 0.05]})
+
+    # plt1 = fig.add_subplot(1,3,1)
+    # plt2 = fig.add_subplot(1,3,2)
+    # plt3 = fig.add_subplot(1,3,3)
+    # cbar = fig.add_subplot(2,3,4,figsize=(6.4, 0.35))
+    x = list(range(len(d_difference[res])))
+    y = sorted(d_difference[res].values(),reverse=True)
+    plt.plot(x,y)
+
+    for p in [1,2,3]:
+        res = residues[p-1]
+        ax = axs[0,p-1]
+        plt.sca(ax)
+        hedges = {}
+        hp = {}
+        key = 0
+        for k,v in sorted(d_diff_filtered[res].items(), key=lambda item: item[1]):
+            key += 1
+            hedges[key] = frozenset(map(lambda x: MD_to_resid(x,u),k))
+            hp[key] = {'weight':v/100000}
+        H = hnx.Hypergraph(hedges,edge_properties = hp)
+        color = [H.edge_properties[e]['weight'] for e in H.edges()]
+        norm = plt.Normalize(-1, 1)
+        color = cm.bwr(norm(color))
+        alpha = 0.9
+        # hnx.draw(H)
+        hnx.drawing.draw(H,
+            edges_kwargs={
+                'facecolors': color*(1, 1, 1, alpha),
+                'edgecolors': 'black',
+                'linewidths': 2
+            },
+            with_edge_labels=False
+        )
+        plt.title(f'residue {MD_to_resid(res,u)}')
+    ax = axs[1,0]
+    plt.sca(ax)
+    gradient = np.linspace(0, 1, 256)
+    gradient = np.vstack((gradient, gradient))
+    plt.imshow(gradient, aspect='auto', cmap=cm.bwr)
+    ax.text(-0.01, 0.5, '15',ha='right', va='center',fontsize=10,transform=ax.transAxes)
+    ax.text(1.01, 0.5, '30', ha='left', va='center',fontsize=10,transform=ax.transAxes)
+
+    for ax in axs[1]:
+        plt.sca(ax)
+        plt.xticks([])
+        plt.yticks([])
+    fig.delaxes(axs[1,1])
+    fig.delaxes(axs[1,2])
+
+    plt.show()
+
+
 def resid_to_md_subunits(r):
-    r-35
+    return np.array([(i * 337) + (r - 35) for i in range(0,4)])
