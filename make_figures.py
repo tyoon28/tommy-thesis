@@ -357,11 +357,11 @@ def chol_interactionlength():
     ax = df.plot.bar(rot=0)
     plt.xlabel('Cholesterol concentration')
     plt.ylabel('Average Interaction length (ns)')
-    plt.savefig('figure_cholesterol_interactionlength', dpi=300, bbox_inches='tight')
+    plt.savefig('figure_cholesterol_interactionlength_cutoff', dpi=300, bbox_inches='tight')
     plt.clf()
 
 
-    plt.hist([bs_vs_rest[0],bs_vs_rest[1]], stacked=True, density=True)
+    plt.hist([bs_vs_rest[0],bs_vs_rest[1]], stacked=False, density=True)
     plt.legend(['Binding sites','All other residues'])
     plt.savefig('figure_cholesterol_interactionlength2', dpi=300, bbox_inches='tight')
     plt.clf()
