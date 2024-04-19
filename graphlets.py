@@ -362,12 +362,15 @@ def graphlets_cholesterol_pca(r,to_csv=False):
         plt.savefig(f'{r}_movement_by_{column}')
 
         result_group_chol= df.groupby(['chol',column])
-        total_by_chol = result_group_chol['21'].mean().values
-        std = result_group_chol['21'].std().values
+        for g,o in [('G10','21'),('G9','17'),('G3','4')]:
+            total_by_chol = result_group_chol[o].mean().values
+            std = result_group_chol[o].std().values
 
-        f = pd.DataFrame({'G10':total_by_chol,'std':std})
-        f.plot(kind='bar' ,y='G10',yerr='std',rot=0)
-        plt.savefig(f'{r}G10_by_{column}2')
+            f = pd.DataFrame({g:total_by_chol,'std':std})
+            f.plot(kind='bar' ,y=g,yerr='std',rot=0)
+            plt.savefig(f'{r}_{o}_by_{column}')
+
+        
         # data = 
         # index = ['15 mol%', '30 mol%']
         # df = pd.DataFrame({'Binding site': data[0], 'Non-binding site': data[1]}, index=index)
@@ -926,15 +929,17 @@ def node_PCA_windowed(r,output=False,to_csv=False):
     if output: dd_to_csv(dd,f'{r}-nodepca',u)
     if to_csv:
         df.to_csv('nodepca_windowed_forR.csv')
-
-    print('looking for G10')
-    dic = {}
-    for n in range(1,1349):
-        d = df.loc[df['node'] == n]
-        dic[n] = np.mean(d[21])
     dd_to_csv(ps,f'{r}-nodeps',u)
-    dd_to_csv(dic,f'{r}-nodeG10',u)
-    color_by_centrality(dic,f'{r}-nodeG10')
+
+    for g,o in [('G10',21),('G9',17),('G3',4)]:
+
+        print(f'looking for {g}')
+        dic = {}
+        for n in range(1,1349):
+            d = df.loc[df['node'] == n]
+            dic[n] = np.mean(d[o])
+        dd_to_csv(dic,f'{r}-node{g}',u)
+        color_by_centrality(dic,f'{r}-node{g}')
     
     return dd
 
