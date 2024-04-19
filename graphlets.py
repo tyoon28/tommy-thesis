@@ -97,7 +97,7 @@ def PCA_gdd(ldirs,to_csv = False):
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
              , columns = [f'PC{x}' for x in range(1,nPCs+1)])
-    finalDf = pd.concat([principalDf, df[['chol','name']]], axis = 1)
+    finalDf = pd.concat([principalDf, df[['chol','name','replicate']]], axis = 1)
     finalDf['start'] = finalDf['name'].str.split('-').str[3]
     finalDf['start'] = finalDf['start'].apply(int)
 
