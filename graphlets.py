@@ -1080,10 +1080,10 @@ def replicate_investigation(ldirs):
 
     # hotelling p https://dionresearch.github.io/hotelling/modules.html#module-hotelling.stats
     # have to use PCs instead of features because some features are perfectly correlated. whatever, it works.
-    x = finalDf[finalDf['replicate'] == 15].drop(columns = ['name','chol','start','replicate']).to_numpy()
-    y = finalDf[finalDf['replicate'] == 30].drop(columns = ['name','chol','start','replicate']).to_numpy()
+    # x = finalDf[finalDf['replicate'] == 15].drop(columns = ['name','chol','start','replicate']).to_numpy()
+    # y = finalDf[finalDf['replicate'] == 30].drop(columns = ['name','chol','start','replicate']).to_numpy()
 
-    print(f'hotelling_p_replicates = {hotelling_t2(x,y)[2]}')
+    # print(f'hotelling_p_replicates = {hotelling_t2(x,y)[2]}')
 
     # PLOTTING PCA. only for 15 and 30
     fig = plt.figure()
