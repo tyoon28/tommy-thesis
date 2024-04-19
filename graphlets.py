@@ -92,6 +92,7 @@ def PCA_gdd(ldirs,to_csv = False):
     for i,j in enumerate(evr):
         if j > 0.99:
             nPCs = i + 1
+            break
     print(f'using {nPCs} components')
     pca = PCA(n_components=nPCs)
     principalComponents = pca.fit_transform(x)
@@ -460,17 +461,27 @@ def node_pca_analysis(r,output=False):
     x = df.loc[:, features].values
     y = df.loc[:,['chol']].values
     x = StandardScaler().fit_transform(x)
-    pca = PCA(n_components=37)
+    pca = PCA()
+    principalComponents = pca.fit_transform(x)
+    evr = pca.explained_variance_ratio_.cumsum()
+    for i,j in enumerate(evr):
+        if j > 0.90:
+            nPCs = i + 1
+            break
+    print(f'using {nPCs} components')
+    pca = PCA(n_components=nPCs)
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
              , columns = [f'PC{x}' for x in range(1,38)])
     finalDf = pd.concat([principalDf, df[['chol','name','node']]], axis = 1)
-    PCs = [f'PC{x}' for x in range(1,38)]
+    PCs = [f'PC{x}' for x in range(1,nPCs+1)]
     
     # PCA see which nodes move the most
+    plt.clf()
     df[features] = df[features].astype(int)
     result_group_node= finalDf.groupby('node')
     distance_by_node = result_group_node[PCs].apply(lambda x: spatial.distance.pdist(x.to_numpy(),metric='euclidean').mean())
+
     if output:
         ax = distance_by_node.plot(kind='bar' ,y='distance_by_node',rot=0,ec='blue')
         thresh = 25
@@ -492,7 +503,9 @@ def node_pca_analysis(r,output=False):
     d_s = distance_by_node.sort_values()
 
     dd=d_s.to_dict()
-    if output: dd_to_csv(dd,f'{r}-nodepca',u)
+    if output: 
+        dd_to_csv(dd,f'{r}-nodepca',u)
+        color_by_centrality(dd,f'{r}-nodepca')
 
 
     return dd
@@ -739,6 +752,7 @@ def wholenetwork_stable_PCA():
     for i,j in enumerate(evr):
         if j > 0.99:
             nPCs = i + 1
+            break
     pca = PCA(n_components=nPCs)
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
@@ -865,7 +879,10 @@ def node_PCA_windowed(r,output=False,to_csv=False):
     plt.xlabel('distance')
     plt.ylabel('accuracy')
     plt.savefig(f'{r}-nodemovement-distance-accuracy.png')
+
+    distance_by_node.index += 1
     d_s = distance_by_node.sort_values()
+    
 
     dd=d_s.to_dict()
 
@@ -878,7 +895,7 @@ def node_PCA_windowed(r,output=False,to_csv=False):
     dic = {}
     for n in range(1,1349):
         d = df.loc[df['node'] == n]
-        d[n] = np.mean(d[21])
+        dic[n] = np.mean(d[21])
     dd_to_csv(ps,f'{r}-nodeps',u)
     dd_to_csv(dic,f'{r}-nodeG10',u)
     color_by_centrality(dic,f'{r}-nodeG10')

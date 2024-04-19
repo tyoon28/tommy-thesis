@@ -54,3 +54,7 @@ def main():
             if abs(d_difference[res][i]) > 10000:
                 d_diff_filtered[res][i] = d_difference[res][i]
         d_diff_filtered[res] = {k: v for k, v in sorted(d_diff_filtered[res].items(), key=lambda item: item[1])}
+
+
+def resid_to_md_subunits(r):
+    r-35
