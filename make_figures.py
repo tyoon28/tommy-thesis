@@ -10,12 +10,12 @@ def main():
     # mid_all = persistance()
     # np.save('mid_all.npy', mid_all)    # .npy extension is added if not given
 
-    # mid_all = np.load('mid_all.npy')
+    mid_all = np.load('mid_all.npy')
     # print('calculating correlations between contacts')
-    # correlation(mid_all,read=True)
+    correlation(mid_all,read=True)
 
-    # print('calculating cholesterol contact landscape')
-    # chol_contact()
+    print('calculating cholesterol contact landscape')
+    chol_contact()
 
     print('calculating cholesterol contact landscape - binding sites')
     chol_interactionlength() # change this to have dots, like a violin plot
@@ -84,12 +84,12 @@ def correlation(mid_all,read=False):
     # nx.write_gexf(G,'correlationgraph.gexf')
     # print('donegraph')
 
-    # print('starclus')
-    # p = (abs(corrcoef_xy) > 0.25)
-    # pp = np.where(p.any(axis=1))[0]
-    # print(len(pp))
-    # plot = sns.clustermap(corrcoef_xy[pp,:][:,pp])
-    # plot.savefig("clustermap-30.png")
+    print('starclus')
+    p = (abs(corrcoef_xy) > 0.25)
+    pp = np.where(p.any(axis=1))[0]
+    print(len(pp))
+    plot = sns.clustermap(corrcoef_xy[pp,:][:,pp])
+    plot.savefig("clustermap-30.png")
 
     # print('startplot')
     # plot = sns.heatmap(corrcoef_xy, annot=True)
@@ -97,6 +97,7 @@ def correlation(mid_all,read=False):
     # print('doneplot')
 
     plt.clf()
+    print('done w corr')
 
 
     # print('done making df. calculating cormat')
@@ -326,6 +327,7 @@ def chol_interactionlength():
                 for i in range(len(rog.results[ch]['binding_events'])):
                     start,end = rog.results[ch]['binding_events'][i]
                     dur = (end-start+1)* 0.2
+                    if dur < 3: continue
 
                     bound = int((start + end)/2) in rog.results[ch]['binding_events_actual']
                     if bound: ind = 0
@@ -333,16 +335,16 @@ def chol_interactionlength():
                     bs_vs_rest[ind].append(dur)
                     all_interactions.append(dur)
 
-        bscounts, bsbins = np.histogram(bs_vs_rest[0], 50)
-        restcounts, restbins = np.histogram(bs_vs_rest[1], 50)
+        # bscounts, bsbins = np.histogram(bs_vs_rest[0], 50)
+        # restcounts, restbins = np.histogram(bs_vs_rest[1], 50)
 
-        plt.plot(bsbins[:-1], bscounts)
-        plt.plot(restbins[:-1], restcounts)
-        plt.xlabel('Interaction length (ns)')
-        plt.ylabel('count')
-        plt.legend(['binding site interactions','other interactions'])
-        plt.savefig(f'figure_cholesterol_interactionlength_hist-{c}', dpi=300, bbox_inches='tight')    
-        plt.clf()
+        # plt.plot(bsbins[:-1], bscounts)
+        # plt.plot(restbins[:-1], restcounts)
+        # plt.xlabel('Interaction length (ns)')
+        # plt.ylabel('count')
+        # plt.legend(['binding site interactions','other interactions'])
+        # plt.savefig(f'figure_cholesterol_interactionlength_hist-{c}', dpi=300, bbox_inches='tight')    
+        # plt.clf()
         avg_bs = np.mean(bs_vs_rest[0])
         avg_rest = np.mean(bs_vs_rest[1])
 
@@ -410,13 +412,13 @@ def centralities():
             eigenvector = nx.eigenvector_centrality_numpy(G)
 
             if i == 0:
-                betweenesses = betweenness
-                closenesses = closeness
-                eigenvectors = eigenvector
+                for d,s in [(betweenesses,betweenness),(closenesses,closenesses),(eigenvectors,eigenvector)]:
+                    for item in s:
+                        d[item+1] = s[item]
             else:
                 for d,s in [(betweenesses,betweenness),(closenesses,closenesses),(eigenvectors,eigenvector)]:
-                    for item in d:
-                        d[item] += s[item]
+                    for item in s:
+                        d[item+1] += s[item]
             i += 1
     
     for d in [betweenesses,closenesses,eigenvectors]:
