@@ -1102,7 +1102,7 @@ def replicate_investigation(ldirs):
     #             , finalDf['PC2']
     #             , c = 'r')
     for target in targets:
-        indicesToKeep = finalDf['replicate'] == target & finalDf['chol'] == 30
+        indicesToKeep = (finalDf['replicate'] == target) & (finalDf['chol'] == 30)
         if len(indicesToKeep) > 10:
             c = next(color)
             ax.scatter(finalDf.loc[indicesToKeep, 'PC1']
