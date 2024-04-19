@@ -8,9 +8,9 @@ def main():
 
     print('starting')
     for i in ['30','15']:
+        d[i] = {}
         for r in ['R1','R2','R3']:
             print(f'doing {r} {i}')
-            d[i] = {}
             xtcs = []
             for file in os.listdir(f'{r}-{i}-closed'):
                 if file.endswith('.xtc'):
