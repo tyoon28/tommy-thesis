@@ -1035,3 +1035,82 @@ def orbits_to_graphlets(df):
     return dd
 
 
+def replicate_investigation(ldirs):
+    # ldirs: list of directories containing separate classes of networks
+    # ldirs = ['/Users/Tommy/Desktop/thesis/orca/output/R1-15-closed-uniform','/Users/Tommy/Desktop/thesis/orca/output/R1-30-closed-uniform']
+    gdds = []
+    for d in ldirs:
+        for f in os.listdir(d):
+            if f == '.DS_Store': continue
+            gdd = graphlet_degree_distribution(os.path.join(d, f))
+
+            if '30' in f: chol = 30
+            else: chol = 15
+            if 'closed' in f: state = 'closed'
+            else: state = 'open'
+
+            if 'R1' in f: rep = 'R1'
+            elif 'R2' in f: rep = 'R2'
+            else: rep = 'R3'
+            gdds.append([f,chol,state,rep] + list(gdd))
+
+    
+    df = pd.DataFrame(gdds,columns=["name", "chol", "state",'replicate'] + list(range(73)))
+    # https://builtin.com/machine-learning/pca-in-python
+    features = list(range(73))
+    x = df.loc[:, features].values
+    y = df.loc[:,['replicate']].values
+    x = StandardScaler().fit_transform(x)
+    pca = PCA()
+    principalComponents = pca.fit_transform(x)
+    evr = pca.explained_variance_ratio_.cumsum()
+    for i,j in enumerate(evr):
+        if j > 0.99:
+            nPCs = i + 1
+            break
+    print(f'using {nPCs} components')
+    pca = PCA(n_components=nPCs)
+    principalComponents = pca.fit_transform(x)
+    principalDf = pd.DataFrame(data = principalComponents
+             , columns = [f'PC{x}' for x in range(1,nPCs+1)])
+    finalDf = pd.concat([principalDf, df[['chol','name','replicate']]], axis = 1)
+    finalDf['start'] = finalDf['name'].str.split('-').str[3]
+    finalDf['start'] = finalDf['start'].apply(int)
+
+
+    # hotelling p https://dionresearch.github.io/hotelling/modules.html#module-hotelling.stats
+    # have to use PCs instead of features because some features are perfectly correlated. whatever, it works.
+    x = finalDf[finalDf['replicate'] == 15].drop(columns = ['name','chol','start','replicate']).to_numpy()
+    y = finalDf[finalDf['replicate'] == 30].drop(columns = ['name','chol','start','replicate']).to_numpy()
+
+    print(f'hotelling_p_replicates = {hotelling_t2(x,y)[2]}')
+
+    # PLOTTING PCA. only for 15 and 30
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1) 
+    # ax.set_xlabel('Principal Component 1', fontsize = 15)
+    ax.set_xlabel('PC 1', fontsize = 15)
+
+    ax.set_ylabel('PC 2', fontsize = 15)
+    ax.set_title('PCA graphlet degree distribution', fontsize = 20)
+
+    targets = sorted(finalDf['replicate'].unique())
+    color = iter(cm.rainbow(np.linspace(0, 1, len(targets))))
+
+
+    # ax.scatter(finalDf['start']
+    #             , finalDf['PC2']
+    #             , c = 'r')
+    for target in targets:
+        indicesToKeep = finalDf['replicate'] == target & finalDf['chol'] == 30
+        if len(indicesToKeep) > 10:
+            c = next(color)
+            ax.scatter(finalDf.loc[indicesToKeep, 'PC1']
+                    , finalDf.loc[indicesToKeep, 'PC2'],
+                    color=c)
+            
+    ax.legend(targets)
+    ax.grid()
+    ax.yaxis.set_major_locator(AutoLocator())
+    ax.xaxis.set_major_locator(AutoLocator())
+    plt.savefig('replicates_pca.png')
