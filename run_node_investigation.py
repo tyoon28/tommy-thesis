@@ -5,9 +5,11 @@ def main():
      
     residues = [265,264,178,179,182] # DON"T RUN WITHOUT SETTING RESIDEUSE
     resnames = ['V','L','G','A','A']
-    
+
+    print('starting')
     for i in ['30','15']:
         for r in ['R1','R2','R3']:
+            print(f'doing {r} {i}')
             d[i] = {}
             xtcs = []
             for file in os.listdir(f'{r}-{i}-closed'):
@@ -17,14 +19,14 @@ def main():
             u = mda.Universe(f'{r}-{i}-closed/{r}-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
 
             protein = u.select_atoms('not resname CHOL and not resname POPC')
-            for res in residues:
+            for res in tqdm.tqdm(residues):
                 resi = resid_to_md_subunits(res)-1
                 print(u.select_atoms(f'resid {resi[0]}').residues[0])
                 # record frequency of each unique set of contacts
                 if i == '30' and r == 'R1':
                     d[i][res] = {}
 
-                for ts in tqdm.tqdm(u.trajectory):
+                for ts in u.trajectory:
                     frame = u.trajectory.frame
                     r_compound = protein.atoms.center_of_mass(compound='residues')
                     mat = distances.contact_matrix(r_compound, cutoff=6)
@@ -62,6 +64,7 @@ def main():
 
 
 
+    print('making fig')
     fig, axs = plt.subplots(2,3,figsize=(16,9), gridspec_kw={'height_ratios': [1, 0.05]})
 
     # plt1 = fig.add_subplot(1,3,1)
@@ -119,3 +122,8 @@ def main():
 
 def resid_to_md_subunits(r):
     return np.array([(i * 337) + (r - 35) for i in range(0,4)])
+
+
+if __name__ == "__main__":
+    warnings.filterwarnings('ignore')
+    main()
