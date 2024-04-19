@@ -104,8 +104,8 @@ def PCA_gdd(ldirs,to_csv = False):
 
     # hotelling p https://dionresearch.github.io/hotelling/modules.html#module-hotelling.stats
     # have to use PCs instead of features because some features are perfectly correlated. whatever, it works.
-    x = finalDf[finalDf['chol'] == 15].drop(columns = ['name','chol','start']).to_numpy()
-    y = finalDf[finalDf['chol'] == 30].drop(columns = ['name','chol','start']).to_numpy()
+    x = finalDf[finalDf['chol'] == 15].drop(columns = ['name','chol','start','replicate']).to_numpy()
+    y = finalDf[finalDf['chol'] == 30].drop(columns = ['name','chol','start','replicate']).to_numpy()
 
     print(f'hotelling_p = {hotelling_t2(x,y)[2]}')
 
@@ -891,7 +891,7 @@ def node_PCA_windowed(r,output=False,to_csv=False):
 def logistic_selection(df,r):
     # for gdds.
     dd = orbits_to_graphlets(df)
-    X = dd.drop('chol',axis=1)
+    X = dd.drop(['chol','replicate'],axis=1)
     y = (dd['chol'] - 15 )/15
     X_train, X_test, y_train, y_test = train_test_split(X,y , 
                                     random_state=104,  
