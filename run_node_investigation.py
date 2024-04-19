@@ -114,6 +114,7 @@ def main():
     # fig.delaxes(axs[1,2])
 
     plt.savefig('hgraphs.png')
+    print('done')
 
 
 def resid_to_md_subunits(r):
