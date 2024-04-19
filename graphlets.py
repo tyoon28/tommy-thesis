@@ -919,7 +919,7 @@ def logistic_selection(df,r):
         graphlet_map = {2:1,3:8,4:15}
         for graphlet_size in range(2,5):
             dd = orbits_to_graphlets(df[list(range(graphlet_map[graphlet_size]))+['chol','replicate']])
-            X = dd.drop('chol',axis=1)
+            X = dd.drop(['chol','replicate'],axis=1)
             y = (dd['chol'] - 15 )/15
             X_train, X_test, y_train, y_test = train_test_split(X,y , 
                                             random_state=104,  
