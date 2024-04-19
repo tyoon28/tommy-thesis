@@ -73,9 +73,14 @@ def PCA_gdd(ldirs,to_csv = False):
             else: chol = 15
             if 'closed' in f: state = 'closed'
             else: state = 'open'
-            gdds.append([f,chol,state] + list(gdd))
+
+            if 'R1' in f: rep = 'R1'
+            elif 'R2' in f: rep = 'R2'
+            else: rep = 'R3'
+            gdds.append([f,chol,state,rep] + list(gdd))
+
     
-    df = pd.DataFrame(gdds,columns=["name", "chol", "state"] + list(range(73)))
+    df = pd.DataFrame(gdds,columns=["name", "chol", "state",'replicate'] + list(range(73)))
     # https://builtin.com/machine-learning/pca-in-python
     features = list(range(73))
     x = df.loc[:, features].values
@@ -967,7 +972,7 @@ def orbits_to_graphlets(df):
          15:(34,5),16:(35,1),17:(39,1),18:(44,1),19:(45,1),20:(50,2),21:(52,1),
          22:(55,2),23:(56,1),24:(61,1),25:(62,1),26:(65,1),27:(69,1),28:(70,2),29:(72,5)}
     
-    cols = ['chol']
+    cols = ['chol','replicate']
     for i in d:
         if d[i][0] in df.columns:
             df[f'G{i}'] = df[d[i][0]]/d[i][1]
