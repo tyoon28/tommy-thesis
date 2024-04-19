@@ -131,3 +131,18 @@ def MD_to_resid(s,u=None):
 
 def u_to_top(u):
     pass
+
+def symmetrize(fn):
+    fn = '/Users/Tommy/Desktop/thesis/figures/out/all-nodepca.csv'
+    do = pd.read_csv(fn)
+    pa = do.groupby('residue ID')['PCA distance normalized to max'].mean()
+    dd = pa.to_dict()
+
+    ddd = {}
+    for k in dd:
+        for key in [(i * 337) + (k - 35) for i in range(0,4)]:
+            ddd[key] = dd[k]
+
+
+    
+    color_by_centrality(ddd,'dynnodepca-symmetric')

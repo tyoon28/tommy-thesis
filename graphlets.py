@@ -472,7 +472,7 @@ def node_pca_analysis(r,output=False):
     pca = PCA(n_components=nPCs)
     principalComponents = pca.fit_transform(x)
     principalDf = pd.DataFrame(data = principalComponents
-             , columns = [f'PC{x}' for x in range(1,38)])
+             , columns = [f'PC{x}' for x in range(1,nPCs+1)])
     finalDf = pd.concat([principalDf, df[['chol','name','node']]], axis = 1)
     PCs = [f'PC{x}' for x in range(1,nPCs+1)]
     
@@ -1002,3 +1002,5 @@ def orbits_to_graphlets(df):
 
     dd = df[cols]
     return dd
+
+
