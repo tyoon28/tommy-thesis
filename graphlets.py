@@ -318,17 +318,19 @@ def graphlets_cholesterol_pca(r,to_csv=False):
             else:
                 chol_condition = 30
 
-            gdds.append([f,chol,chol_bind,chol_condition,state] + list(gdd))
+            chol_chol = int(chol) - int(chol_bind)
+
+            gdds.append([f,chol,chol_bind,chol_condition,state,chol_chol] + list(gdd))
     
     
-    df = pd.DataFrame(gdds,columns=["name", "chol",'chol_bind','chol_condition', "state"] + list(map(str,range(73))))
+    df = pd.DataFrame(gdds,columns=["name", "chol",'chol_bind','chol_condition', "state",'chol_chol'] + list(map(str,range(73))))
     df['chol'] = df['chol'].apply(int)
     df['chol_bind'] = df['chol_bind'].apply(int)
 
 
     # https://builtin.com/machine-learning/pca-in-python
     # see difference between cholesterol contacts and cholesterol "binding"
-    for column in ['chol','chol_bind']:
+    for column in ['chol','chol_bind','chol_chol']:
         features = list(map(str,range(73)))
         x = df.loc[:, features].values
         y = df.loc[:,[column]].values

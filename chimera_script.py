@@ -145,4 +145,4 @@ def symmetrize(fn):
 
 
     
-    color_by_centrality(ddd,'dynnodepca-symmetric')
+    color_by_centrality(ddd,'nodepca-symmetric')
