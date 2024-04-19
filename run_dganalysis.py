@@ -5,7 +5,7 @@ def main():
     gotnames = False
     gdds = []
     ldirs = ['../dynamic_graphlets/output/']
-    ldirs = ['../dynamic_graphlets/output/R1-15-closed-len50/dcounts','../dynamic_graphlets/output/R1-30-closed-len50/dcounts']
+    # ldirs = ['../dynamic_graphlets/output/R1-15-closed-len50/dcounts','../dynamic_graphlets/output/R1-30-closed-len50/dcounts']
     print('starting analysis of all')
     for d in ldirs:
         for f in os.listdir(d):
@@ -36,7 +36,7 @@ def main():
     evr = pca.explained_variance_ratio_.cumsum()
     for i,j in enumerate(evr):
         if j > 0.99:
-            nPCs = i + 1
+            nPCs = i+1
             break
     print(f'using {nPCs} components')
     pca = PCA(n_components=nPCs)
@@ -172,7 +172,7 @@ def main():
     plt.tight_layout()
     plt.savefig(f'{r}-dyn-nodemovement-repdiff.png')
 
-    
+    distance_by_node.index += 1
     d_s = distance_by_node.sort_values()
     dd=d_s.to_dict()
     dd_to_csv(dd,f'all-dynnodepca',u)
