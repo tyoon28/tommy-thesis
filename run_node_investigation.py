@@ -20,7 +20,7 @@ def main():
 
             protein = u.select_atoms('not resname CHOL and not resname POPC')
             for res in tqdm.tqdm(residues):
-                resi = resid_to_md_subunits(res)-1
+                resi = resid_to_md_subunits(res)
                 print(u.select_atoms(f'resid {resi[0]}').residues[0])
                 # record frequency of each unique set of contacts
                 if i == '30' and r == 'R1':
@@ -32,7 +32,7 @@ def main():
                     mat = distances.contact_matrix(r_compound, cutoff=6)
                     np.fill_diagonal(mat, 0) 
                     # +/- 1 from resid for proper indexing
-                    nz = np.nonzero(mat[resi])[0] + 1
+                    nz = np.nonzero(mat[resi-1])[0] + 1
                     fs = frozenset(nz)
                     if fs in d[i][res].keys():
                         d[i][res][fs] += 1 
