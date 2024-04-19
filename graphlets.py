@@ -298,6 +298,7 @@ def output_graphs_graphlets_cholesterol(replicate,thresh=0.4):
 def graphlets_cholesterol_pca(r,to_csv=False):
     '''analyze orca output. r is R1-R3. Orca output must be in ../orca/output/{r}-<x>-closed'''
     #PCA
+    # [f'../orca/output/R1-15-closed-contact',f'../orca/output/R1-30-closed-contact']
     if r == 'all':
         ldirs = [f'../orca/output/{r}-{c}-closed-contact' for r in ['R1','R2','R3'] for c in ['15','30']]
     else:
@@ -360,13 +361,17 @@ def graphlets_cholesterol_pca(r,to_csv=False):
         total_by_chol.plot(kind='bar' ,y='graphlet vector L2 norm',rot=0)
         plt.savefig(f'{r}_movement_by_{column}')
 
-        result_group_chol= df.groupby(column)
+        result_group_chol= df.groupby(['chol',column])
         total_by_chol = result_group_chol['21'].mean().values
         std = result_group_chol['21'].std().values
 
         f = pd.DataFrame({'G10':total_by_chol,'std':std})
         f.plot(kind='bar' ,y='G10',yerr='std',rot=0)
-        plt.savefig(f'{r}G10_by_{column}')
+        plt.savefig(f'{r}G10_by_{column}2')
+        # data = 
+        # index = ['15 mol%', '30 mol%']
+        # df = pd.DataFrame({'Binding site': data[0], 'Non-binding site': data[1]}, index=index)
+        # ax = df.plot.bar(rot=0)
 
 
 
