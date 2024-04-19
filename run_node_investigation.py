@@ -3,7 +3,8 @@ from graphlets import *
 def main():
     d = {} # key: residue; item: dict of concentrations with dict of contacts and frequencies
      
-    residues = [265] # DON"T RUN WITHOUT SETTING RESIDEUSE
+    residues = [265,264,178,179,182] # DON"T RUN WITHOUT SETTING RESIDEUSE
+    resnames = ['V','L','G','A','A']
     
     for i in ['30','15']:
         for r in ['R1','R2','R3']:
@@ -18,8 +19,10 @@ def main():
             protein = u.select_atoms('not resname CHOL and not resname POPC')
             for res in residues:
                 resi = resid_to_md_subunits(res)-1
+                print(u.select_atoms(f'resid {resi[0]}').residues[0])
                 # record frequency of each unique set of contacts
-                d[i][res] = {}
+                if i == '30' and r == 'R1':
+                    d[i][res] = {}
 
                 for ts in tqdm.tqdm(u.trajectory):
                     frame = u.trajectory.frame
@@ -53,7 +56,7 @@ def main():
     for res in residues:
         d_diff_filtered[res] = {}
         for i in d_difference[res]:
-            if abs(d_difference[res][i]) > 10000:
+            if abs(d_difference[res][i]) > 60000:
                 d_diff_filtered[res][i] = d_difference[res][i]
         d_diff_filtered[res] = {k: v for k, v in sorted(d_diff_filtered[res].items(), key=lambda item: item[1])}
 
@@ -69,9 +72,9 @@ def main():
     y = sorted(d_difference[res].values(),reverse=True)
     plt.plot(x,y)
 
-    for p in [1,2,3]:
+    for p in [1,2,3,4,5,6]:
         res = residues[p-1]
-        ax = axs[0,p-1]
+        ax = axs[p//3,(p-1)%3]
         plt.sca(ax)
         hedges = {}
         hp = {}
@@ -79,7 +82,7 @@ def main():
         for k,v in sorted(d_diff_filtered[res].items(), key=lambda item: item[1]):
             key += 1
             hedges[key] = frozenset(map(lambda x: MD_to_resid(x,u),k))
-            hp[key] = {'weight':v/100000}
+            hp[key] = {'weight':v/600000}
         H = hnx.Hypergraph(hedges,edge_properties = hp)
         color = [H.edge_properties[e]['weight'] for e in H.edges()]
         norm = plt.Normalize(-1, 1)
@@ -94,23 +97,23 @@ def main():
             },
             with_edge_labels=False
         )
-        plt.title(f'residue {MD_to_resid(res,u)}')
-    ax = axs[1,0]
-    plt.sca(ax)
-    gradient = np.linspace(0, 1, 256)
-    gradient = np.vstack((gradient, gradient))
-    plt.imshow(gradient, aspect='auto', cmap=cm.bwr)
-    ax.text(-0.01, 0.5, '15',ha='right', va='center',fontsize=10,transform=ax.transAxes)
-    ax.text(1.01, 0.5, '30', ha='left', va='center',fontsize=10,transform=ax.transAxes)
+        plt.title(f'residue {resnames[p-1]}{res}')
+    # ax = axs[1,0]
+    # plt.sca(ax)
+    # gradient = np.linspace(0, 1, 256)
+    # gradient = np.vstack((gradient, gradient))
+    # plt.imshow(gradient, aspect='auto', cmap=cm.bwr)
+    # ax.text(-0.01, 0.5, '15',ha='right', va='center',fontsize=10,transform=ax.transAxes)
+    # ax.text(1.01, 0.5, '30', ha='left', va='center',fontsize=10,transform=ax.transAxes)
 
-    for ax in axs[1]:
-        plt.sca(ax)
-        plt.xticks([])
-        plt.yticks([])
-    fig.delaxes(axs[1,1])
-    fig.delaxes(axs[1,2])
+    # for ax in axs[1]:
+    #     plt.sca(ax)
+    #     plt.xticks([])
+    #     plt.yticks([])
+    # fig.delaxes(axs[1,1])
+    # fig.delaxes(axs[1,2])
 
-    plt.show()
+    plt.savefig('hgraphs.png')
 
 
 def resid_to_md_subunits(r):
