@@ -1001,7 +1001,11 @@ def logistic_selection(df,r):
     feature_importance = pd.DataFrame({'Feature': X.columns, 'Importance': np.abs(coefficients)})
     feature_importance = feature_importance.sort_values('Importance', ascending=True)
     feature_importance = feature_importance.iloc[-10:]
-    feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
+    feature_importance.plot(x='Feature', y='Importance', kind='barh',
+                             figsize=(10, 6),color='gray',edgecolor='black',
+                             linewidth=1,legend=False)
+    plt.xlabel('Graphlet importance')
+
     plt.savefig(f'{r}-gdd-varimportance-logit.png')
 
     if r =='all':
