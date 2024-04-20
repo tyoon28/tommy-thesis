@@ -382,7 +382,7 @@ def graphlets_cholesterol_pca(r,to_csv=False):
 
         # result_group_chol= df.groupby(['chol',column])
         for g,o in [('G10','21'),('G9','17'),('G3','4')]:
-            total_by_chol = result_group_chol[o].mean().values
+            total_by_chol = result_group_chol[o].filter(lambda x : len(x) > 20).mean().values
             # asymmetric error bars. not actually standard deviation.
             std = result_group_chol[o].quantile([.025,.975]).unstack()
 
