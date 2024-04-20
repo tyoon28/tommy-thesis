@@ -5,13 +5,15 @@ import warnings
 
 #TODO: after inspection look for G14 in response to choleseterol
 def main():
+    rc('font',**{'family':'serif','serif':['Times']})
     # for r in ['R1','R2','R3']:
     #     print(f'working on {r}')
     #     ldirs = [f'../orca/output/{r}-15-closed',f'../orca/output/{r}-30-closed']
 
     #     df,finalDf,pca = PCA_gdd(ldirs)
+    
     #     print(f'making PCA plots for {r}')
-    #     plot_PCA_gdd(finalDf,f'{r}_PCA_gdd')
+    #     plot_PCA_gdd(finalDf,f'{r}_PCA_gdd',evr = pca.explained_variance_ratio_[:2])
 
     #     print(f'calculating variable importance for {r}')
     #     logistic_selection(df,r)

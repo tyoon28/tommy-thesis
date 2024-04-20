@@ -22,6 +22,9 @@ from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.model_selection import KFold, cross_val_score
 import pickle 
 from hotelling.stats import hotelling_t2
+from matplotlib import rc
+
+
 
 
 
@@ -119,18 +122,26 @@ def PCA_gdd(ldirs,to_csv = False):
     return df,finalDf,pca
 
 
-def plot_PCA_gdd(finalDf,out,column = 'chol'):
+def plot_PCA_gdd(finalDf,out,column = 'chol',evr=None):
     # PLOTTING PCA. only for 15 and 30
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1) 
     # ax.set_xlabel('Principal Component 1', fontsize = 15)
-    ax.set_xlabel('PC 1', fontsize = 15)
+    if evr is not None:
+        xExp = round(evr[0]*100,1)
+        yExp = round(evr[1]*100,1)
+        ax.set_xlabel(f'PC 1 ({xExp}% Variance)', fontsize = 15)
+        ax.set_ylabel(f'PC 2 ({yExp}% Variance)', fontsize = 15)
 
-    ax.set_ylabel('PC 2', fontsize = 15)
+    else:
+        ax.set_xlabel('PC 1', fontsize = 15)
+        ax.set_ylabel('PC 2', fontsize = 15)
     ax.set_title('PCA graphlet degree distribution', fontsize = 20)
 
     targets = sorted(finalDf[column].unique())
     color = iter(cm.rainbow(np.linspace(0, 1, len(targets))))
+    if column == 'chol':
+        color = iter(['#18a5ff','#d41159'])
 
 
     # ax.scatter(finalDf['start']
@@ -144,8 +155,11 @@ def plot_PCA_gdd(finalDf,out,column = 'chol'):
                     , finalDf.loc[indicesToKeep, 'PC2'],
                     color=c,s=5)
             
-    ax.legend(targets)
-    ax.grid()
+    if column == 'chol':
+        ax.legend(['15 mol%','30 mol%'])
+    else:
+        ax.legend(targets)
+    ax.grid(False)
     ax.yaxis.set_major_locator(AutoLocator())
     ax.xaxis.set_major_locator(AutoLocator())
     plt.savefig(f'{out}.png')
@@ -298,7 +312,7 @@ def output_graphs_graphlets_cholesterol(replicate,thresh=0.4):
 def graphlets_cholesterol_pca(r,to_csv=False):
     '''analyze orca output. r is R1-R3. Orca output must be in ../orca/output/{r}-<x>-closed'''
     #PCA
-    # [f'../orca/output/R1-15-closed-contact',f'../orca/output/R1-30-closed-contact']
+    # ldirs = [f'../orca/output/R1-15-closed-cholesterol-threshold40']
     if r == 'all':
         ldirs = [f'../orca/output/{r}-{c}-closed-contact' for r in ['R1','R2','R3'] for c in ['15','30']]
     else:
@@ -331,6 +345,8 @@ def graphlets_cholesterol_pca(r,to_csv=False):
 
     # https://builtin.com/machine-learning/pca-in-python
     # see difference between cholesterol contacts and cholesterol "binding"
+    xlabdict = {'chol': 'Cholesterol touching channel','chol_bind': 'Cholesterol touching binding sites',
+                'chol_chol': 'Cholesterol touching nonspecific sites'}
     for column in ['chol','chol_bind','chol_chol']:
         features = list(map(str,range(73)))
         x = df.loc[:, features].values
@@ -361,13 +377,19 @@ def graphlets_cholesterol_pca(r,to_csv=False):
         total_by_chol.plot(kind='bar' ,y='graphlet vector L2 norm',rot=0)
         plt.savefig(f'{r}_movement_by_{column}')
 
-        result_group_chol= df.groupby(['chol',column])
+        # result_group_chol= df.groupby(['chol',column])
         for g,o in [('G10','21'),('G9','17'),('G3','4')]:
             total_by_chol = result_group_chol[o].mean().values
-            std = result_group_chol[o].std().values
+            # asymmetric error bars. not actually standard deviation.
+            std = result_group_chol[o].quantile([.025,.975]).unstack()
+            std = std.sub(f['hi'],axis=0)
+            std = abs(std.to_numpy().T)
 
-            f = pd.DataFrame({g:total_by_chol,'std':std})
-            f.plot(kind='bar' ,y=g,yerr='std',rot=0)
+            f = pd.DataFrame({g:total_by_chol})
+            f.plot(kind='bar' ,y=g,yerr=std,rot=0,capsize=3,color='gray',edgecolor='black',linewidth=1,legend=False)
+            plt.xlabel(xlabdict[column])
+            plt.ylabel(f'# {g}')
+            
             plt.savefig(f'{r}_{o}_by_{column}')
             plt.clf()
 
