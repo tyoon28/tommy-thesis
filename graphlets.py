@@ -387,6 +387,8 @@ def graphlets_cholesterol_pca(r,to_csv=False):
             # asymmetric error bars. not actually standard deviation.
             std = groupby_o.quantile([.025,.975]).unstack()
 
+            print(std)
+
             f = pd.DataFrame({g:total_by_chol})
             std = std.sub(f[g],axis=0)
             std = abs(std.to_numpy().T)
