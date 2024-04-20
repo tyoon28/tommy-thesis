@@ -34,7 +34,7 @@ def main():
     #     print(f'done with {r}')
 
     print('running combined')
-    # r = 'all'
+    r = 'all'
     ldirs = [f'../orca/output/{r}-{c}-closed' for r in ['R1','R2','R3'] for c in ['15','30']]
     replicate_investigation(ldirs)
 
