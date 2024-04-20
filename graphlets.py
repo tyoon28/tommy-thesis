@@ -142,7 +142,7 @@ def plot_PCA_gdd(finalDf,out,column = 'chol'):
             c = next(color)
             ax.scatter(finalDf.loc[indicesToKeep, 'PC1']
                     , finalDf.loc[indicesToKeep, 'PC2'],
-                    color=c)
+                    color=c,s=5)
             
     ax.legend(targets)
     ax.grid()
@@ -931,12 +931,14 @@ def node_PCA_windowed(r,output=False,to_csv=False):
         df.to_csv('nodepca_windowed_forR.csv')
     dd_to_csv(ps,f'{r}-nodeps',u)
 
-    for g,o in [('G10',21),('G9',17),('G3',4)]:
+    for g,o in [('G10',[21,20,18,19]),('G9',[17,16,15]),('G3',[4,5])]:
 
         print(f'looking for {g}')
         dic = {}
         for n in range(1,1349):
+            c = 0
             d = df.loc[df['node'] == n]
+            d = d[o]
             dic[n] = np.mean(d[o])
         dd_to_csv(dic,f'{r}-node{g}',u)
         color_by_centrality(dic,f'{r}-node{g}')
