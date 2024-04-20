@@ -44,8 +44,8 @@ def main():
     # print(f'making PCA plots for all')
     # plot_PCA_gdd(finalDf,f'all_PCA_gdd')
 
-    # print(f'calculating variable importance for all')
-    # logistic_selection(df,r)
+    print(f'calculating variable importance for all')
+    logistic_selection(df,r)
 
     print(f'doing cholesterol plots for all')
     graphlets_cholesterol_pca('all',to_csv=True)
