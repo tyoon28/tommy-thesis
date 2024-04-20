@@ -390,7 +390,8 @@ def graphlets_cholesterol_pca(r,to_csv=False):
             f = pd.DataFrame({g:total_by_chol})
             std = std.sub(f[g],axis=0)
             std = abs(std.to_numpy().T)
-            
+            print(f,std,std.shape,len(f))
+
             f.plot(kind='bar' ,y=g,yerr=std,rot=0,capsize=3,color='gray',edgecolor='black',linewidth=1,legend=False)
             plt.xlabel(xlabdict[column])
             plt.ylabel(f'# {g}')
