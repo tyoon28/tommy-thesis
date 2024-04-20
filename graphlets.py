@@ -343,6 +343,8 @@ def graphlets_cholesterol_pca(r,to_csv=False):
     df['chol'] = df['chol'].apply(int)
     df['chol_bind'] = df['chol_bind'].apply(int)
 
+    df.to_csv('all_gdd_chol.csv')
+
 
     # https://builtin.com/machine-learning/pca-in-python
     # see difference between cholesterol contacts and cholesterol "binding"
