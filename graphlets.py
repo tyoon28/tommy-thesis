@@ -343,7 +343,7 @@ def graphlets_cholesterol_pca(r,to_csv=False):
     df['chol'] = df['chol'].apply(int)
     df['chol_bind'] = df['chol_bind'].apply(int)
 
-    df.to_csv('all_gdd_chol.csv')
+    df.to_csv('all_gdd_chol_forR.csv')
 
 
     # https://builtin.com/machine-learning/pca-in-python
@@ -369,7 +369,7 @@ def graphlets_cholesterol_pca(r,to_csv=False):
                 , columns = [f'PC{x}' for x in range(1,nPCs+1)])
         
         finalDf = pd.concat([principalDf, df[[column,'name']]], axis = 1)
-        plot_PCA_gdd(finalDf,f'{r}_graphlet_cholesterol_{column}',column = column)
+        # plot_PCA_gdd(finalDf,f'{r}_graphlet_cholesterol_{column}',column = column)
 
         # movement graph
         result_group_chol= df.groupby(column)
