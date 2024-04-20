@@ -335,16 +335,16 @@ def chol_interactionlength():
                     bs_vs_rest[ind].append(dur)
                     all_interactions.append(dur)
 
-        # bscounts, bsbins = np.histogram(bs_vs_rest[0], 50)
-        # restcounts, restbins = np.histogram(bs_vs_rest[1], 50)
+        bscounts, bsbins = np.histogram(bs_vs_rest[0], 50)
+        restcounts, restbins = np.histogram(bs_vs_rest[1], 50)
 
-        # plt.plot(bsbins[:-1], bscounts)
-        # plt.plot(restbins[:-1], restcounts)
-        # plt.xlabel('Interaction length (ns)')
-        # plt.ylabel('count')
-        # plt.legend(['binding site interactions','other interactions'])
-        # plt.savefig(f'figure_cholesterol_interactionlength_hist-{c}', dpi=300, bbox_inches='tight')    
-        # plt.clf()
+        plt.plot(bsbins[:-1], bscounts)
+        plt.plot(restbins[:-1], restcounts)
+        plt.xlabel('Interaction length (ns)')
+        plt.ylabel('count')
+        plt.legend(['binding site interactions','other interactions'])
+        plt.savefig(f'figure_cholesterol_interactionlength_hist-{c}', dpi=300, bbox_inches='tight')    
+        plt.clf()
         avg_bs = np.mean(bs_vs_rest[0])
         avg_rest = np.mean(bs_vs_rest[1])
 
@@ -361,7 +361,7 @@ def chol_interactionlength():
     plt.clf()
 
 
-    plt.hist([bs_vs_rest[0],bs_vs_rest[1]], stacked=False, density=True)
+    plt.hist([bs_vs_rest[0],bs_vs_rest[1]], stacked=True, density=True)
     plt.legend(['Binding sites','All other residues'])
     plt.savefig('figure_cholesterol_interactionlength2', dpi=300, bbox_inches='tight')
     plt.clf()

@@ -369,6 +369,7 @@ def graphlets_cholesterol_pca(r,to_csv=False):
             f = pd.DataFrame({g:total_by_chol,'std':std})
             f.plot(kind='bar' ,y=g,yerr='std',rot=0)
             plt.savefig(f'{r}_{o}_by_{column}')
+            plt.clf()
 
         
         # data = 
@@ -971,7 +972,7 @@ def logistic_selection(df,r):
 
     feature_importance = pd.DataFrame({'Feature': X.columns, 'Importance': np.abs(coefficients)})
     feature_importance = feature_importance.sort_values('Importance', ascending=True)
-    feature_importance = feature_importance.iloc[-20:]
+    feature_importance = feature_importance.iloc[-10:]
     feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
     plt.savefig(f'{r}-gdd-varimportance-logit.png')
 
@@ -1099,7 +1100,7 @@ def replicate_investigation(ldirs):
     ax.set_xlabel('PC 1', fontsize = 15)
 
     ax.set_ylabel('PC 2', fontsize = 15)
-    ax.set_title('PCA graphlet degree distribution', fontsize = 20)
+    ax.set_title('PCA graphlet degree distribution between replicates', fontsize = 20)
 
     targets = sorted(finalDf['replicate'].unique())
     color = iter(cm.rainbow(np.linspace(0, 1, len(targets))))

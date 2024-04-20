@@ -38,12 +38,12 @@ def main():
     ldirs = [f'../orca/output/{r}-{c}-closed' for r in ['R1','R2','R3'] for c in ['15','30']]
     replicate_investigation(ldirs)
 
-    # df, finalDf,pca = PCA_gdd(ldirs,to_csv=True)
-    # print(f'making PCA plots for all')
-    # plot_PCA_gdd(finalDf,f'all_PCA_gdd')
+    df, finalDf,pca = PCA_gdd(ldirs,to_csv=True)
+    print(f'making PCA plots for all')
+    plot_PCA_gdd(finalDf,f'all_PCA_gdd')
 
-    # print(f'calculating variable importance for all')
-    # logistic_selection(df,r)
+    print(f'calculating variable importance for all')
+    logistic_selection(df,r)
 
     print(f'doing cholesterol plots for all')
     graphlets_cholesterol_pca('all',to_csv=True)
