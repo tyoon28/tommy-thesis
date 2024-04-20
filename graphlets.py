@@ -114,6 +114,7 @@ def PCA_gdd(ldirs,to_csv = False):
     print(f'hotelling_p = {hotelling_t2(x,y)[2]}')
 
     if to_csv:
+        finalDf.to_csv('gdd_pca_all_forR.csv')
         df.to_csv('gdd_all_forR.csv')
         dd = orbits_to_graphlets(df)
         dd.to_csv('gdd_all_reduced_forR.csv')
