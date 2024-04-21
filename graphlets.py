@@ -129,8 +129,8 @@ def plot_PCA_gdd(finalDf,out,column = 'chol',evr=None,pcpair = ['PC1','PC2']):
     ax = fig.add_subplot(1,1,1) 
     # ax.set_xlabel('Principal Component 1', fontsize = 15)
     if evr is not None:
-        xExp = round(evr[int(pcpair[0][2:])]*100,1)
-        yExp = round(evr[int(pcpair[1][2:])]*100,1)
+        xExp = round(evr[int(pcpair[0][2:])-1]*100,1)
+        yExp = round(evr[int(pcpair[1][2:])-1]*100,1)
         ax.set_xlabel(f'{pcpair[0]} ({xExp}% Variance)', fontsize = 15)
         ax.set_ylabel(f'{pcpair[1]} ({yExp}% Variance)', fontsize = 15)
 

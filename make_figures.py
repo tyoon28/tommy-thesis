@@ -88,7 +88,7 @@ def correlation(mid_all,read=False):
     p = (abs(corrcoef_xy) > 0.25)
     pp = np.where(p.any(axis=1))[0]
     print(len(pp))
-    plot = sns.clustermap(corrcoef_xy[pp,:][:,pp],cmap="mako")
+    plot = sns.clustermap(corrcoef_xy[pp,:][:,pp])
     plot.savefig("clustermap-30.png")
 
     # print('startplot')

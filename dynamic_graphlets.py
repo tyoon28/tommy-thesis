@@ -140,8 +140,8 @@ def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None,PCs=('PC1','PC2'),colorby=
 
     
     evr = pca.explained_variance_ratio_
-    xExp = evr[int(PCs[0][2:])]*100
-    yExp = evr[int(PCs[1][2:])]*100
+    xExp = evr[int(PCs[0][2:])-1]*100
+    yExp = evr[int(PCs[1][2:])-1]*100
     ax.set_xlabel(f'{PCs[0]} ({xExp}% Variance)', fontsize = 15)
     ax.set_ylabel(f'{PCs[1]} ({yExp}% Variance)', fontsize = 15)
     ax.set_title('PCA dynamic graphlet degree distribution', fontsize = 20)
