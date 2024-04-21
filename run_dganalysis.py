@@ -50,7 +50,7 @@ def main():
     print('done w pca')
 
 
-    pcpair = PCA_logistic_selection(finalDf,pca,nPCs)
+    pcpair = PCA_logistic_selection(finalDf,pca,nPCs,output_fig=True)
 
     plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-all',PCs=pcpair)
     plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-1-2-all')

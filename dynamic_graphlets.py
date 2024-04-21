@@ -204,7 +204,7 @@ def PCA_logistic_selection(finalDf,pca,nPCs,output_fig=False):
     feature_importance = feature_importance.sort_values('Importance', ascending=True)
     if output_fig:
         feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
-        plt.savefig(f'varimportance.png')
+        plt.savefig(f'dyngraphlet-varimportance.png')
         plt.clf()
     return (feature_importance['Feature'].iloc[-1],feature_importance['Feature'].iloc[-2])
     
