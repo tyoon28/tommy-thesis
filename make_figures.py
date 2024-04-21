@@ -17,8 +17,8 @@ def main():
     # print('calculating cholesterol contact landscape')
     # chol_contact()
 
-    # print('calculating cholesterol contact landscape - binding sites')
-    # chol_interactionlength() # change this to have dots, like a violin plot
+    print('calculating cholesterol contact landscape - binding sites')
+    chol_interactionlength(out=True)
 
     # print('calculating centralities')
     # centralities()
@@ -71,7 +71,6 @@ def correlation(mid_all,read=False):
         df = pd.DataFrame(comp)
         df.to_csv('biggo.csv')
     else:   
-        t = time.time()
         corrcoef_xy = np.load('cormat-30.npy')
     print(corrcoef_xy.shape)
     print(np.count_nonzero(abs(corrcoef_xy) > 0.5))
@@ -305,12 +304,14 @@ def chol_contact():
     plt.savefig('figure_cholcontact.png', dpi=300, bbox_inches='tight')
 
 
-def chol_interactionlength():
+def chol_interactionlength(out = False):
     # cholesterol contacts tend to be short, with most lasitng X ns. longest contact is X ns.
     # lengths of interactions of binding sites vs with rest of protein
     data = []
+    df = pd.DataFrame()
+    l = []
+    all_interactions = [] # list of durations of all interactions
     for c in ['15','30']:
-        all_interactions = [] # list of durations of all interactions
         bs_vs_rest = [[],[]] # 0: durations of interactions that touch a binding site; 1: others
 
         for r in ['R1','R2','R3']:
@@ -332,10 +333,15 @@ def chol_interactionlength():
                     if dur < 3: continue
 
                     bound = int((start + end)/2) in rog.results[ch]['binding_events_actual']
-                    if bound: ind = 0
-                    else: ind = 1
+                    if bound: 
+                        ind = 0
+                        l.append('bound')
+                    else: 
+                        ind = 1
+                        l.append('not bound')
                     bs_vs_rest[ind].append(dur)
                     all_interactions.append(dur)
+                
 
         bscounts, bsbins = np.histogram(bs_vs_rest[0], 50)
         restcounts, restbins = np.histogram(bs_vs_rest[1], 50)
@@ -351,8 +357,9 @@ def chol_interactionlength():
         avg_rest = np.mean(bs_vs_rest[1])
 
         data.append([avg_bs,avg_rest])
-
-
+    if out:
+        df = pd.DataFrame({'events':all_interactions,'type':l})
+        df.to_csv('bindinginteractions_forR.csv')
     # grouped bar chart with binding site/non bs and chol concentration.
     index = ['15 mol%', '30 mol%']
     df = pd.DataFrame({'Binding site': data[0], 'Non-binding site': data[1]}, index=index)
