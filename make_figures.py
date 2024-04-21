@@ -7,24 +7,24 @@ import time
 def main():
     # inefficient to do all of these in series but who cares.
     # print('calculating persistence in RIN')
-    # mid_all = persistance()
+    mid_all = persistance()
     # np.save('mid_all.npy', mid_all)    # .npy extension is added if not given
 
     mid_all = np.load('mid_all.npy')
     # print('calculating correlations between contacts')
     correlation(mid_all,read=True)
 
-    print('calculating cholesterol contact landscape')
-    chol_contact()
+    # print('calculating cholesterol contact landscape')
+    # chol_contact()
 
-    print('calculating cholesterol contact landscape - binding sites')
-    chol_interactionlength() # change this to have dots, like a violin plot
+    # print('calculating cholesterol contact landscape - binding sites')
+    # chol_interactionlength() # change this to have dots, like a violin plot
 
-    print('calculating centralities')
-    centralities()
+    # print('calculating centralities')
+    # centralities()
 
-    print('cholesterol threshold graph')
-    chol_thresh()
+    # print('cholesterol threshold graph')
+    # chol_thresh()
 
 
 def correlation(mid_all,read=False):
@@ -199,7 +199,7 @@ def persistance():
     # did i spell it right?
     
     for c in ['15','30']:
-        if c == '15': continue # decided this fig is only for 30%
+        if c == '15': continue # decided this fig is only for 30%, because it's the same for 15.
         store = np.zeros((1348,1348))
         for r in ['R1','R2','R3']:
             contact_threshold = 6
@@ -227,15 +227,17 @@ def persistance():
         mid = no0[np.where(no0 > 0.1)]
         mid = mid[np.where(mid < 0.9)]
 
-        plt.hist(no0)
+        no0 = no0 * 100
+        plt.hist(no0,color='gray',edgecolor='black',linewidth=1)
+
         print(f'persistence {c} mol%: {len(mid)}')
         print(f'total coltacts: {len(no0)}')
         print(f'middle percent total contact time in {c} mol%: {np.sum(mid)/np.sum(no0)}')
         
 
     
-    plt.xlabel('average % persistance')
-    plt.ylabel('count')
+    plt.xlabel('Average % persistance of contact')
+    plt.ylabel('Count')
     # plt.legend(['15 mol%','30 mol%'])
 
     plt.savefig('figure_edgepersistence.png')
