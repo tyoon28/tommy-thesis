@@ -48,14 +48,14 @@ def main():
     # print(f'calculating variable importance for all')
     # logistic_selection(df,r)
 
-    print(f'doing cholesterol plots for all')
-    graphlets_cholesterol_pca('all',to_csv=True)
+    # print(f'doing cholesterol plots for all')
+    # graphlets_cholesterol_pca('all',to_csv=True)
 
-    # print(f'doing individual nodes for all')
-    # node_pca_analysis(r,output=True)
+    # # print(f'doing individual nodes for all')
+    # # node_pca_analysis(r,output=True)
 
-    print(f'doing individual nodes windowed for all')
-    node_PCA_windowed(r,output=True,to_csv=True)
+    # print(f'doing individual nodes windowed for all')
+    # node_PCA_windowed(r,output=True,to_csv=True)
 
 
     # TODO: which nodes are highly predictive of cholesterol condition?
