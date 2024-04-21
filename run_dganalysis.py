@@ -38,6 +38,7 @@ def main():
         if j > 0.99:
             nPCs = i+1
             break
+    df.to_csv('dyngraphlets_forR.csv')
     print(f'using {nPCs} components')
     pca = PCA(n_components=nPCs)
     principalComponents = pca.fit_transform(x)
@@ -52,7 +53,7 @@ def main():
     pcpair = PCA_logistic_selection(finalDf,pca,nPCs)
 
     plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-all',PCs=pcpair)
-    plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-colorbyrep',PCs=pcpair,colorby='replicate')
+    # plot_PCA_dyn_gdd(finalDf,pca,remote=True,fn='dyngraphlets-colorbyrep',PCs=pcpair,colorby='replicate')
 
 
     x = finalDf[finalDf['chol'] == 15].drop(columns = ['name','chol','start','replicate']).to_numpy()

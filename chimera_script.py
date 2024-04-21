@@ -54,11 +54,12 @@ one_letter ={'VAL':'V', 'ILE':'I', 'LEU':'L', 'GLU':'E', 'GLN':'Q', \
 
 
 
-def color_by_centrality(d,fn):
+def color_by_centrality(d,fn,normalize=True):
     d_sort = dict(sorted(d.items(), key=lambda x: x[1]))
-
     a = np.array(list(d_sort.values()),dtype=np.longdouble)
-    a = a/a.max()
+
+    if normalize:
+        a = a/a.max()
     cmap = LinearSegmentedColormap.from_list("", ["darkgray","red"])
     color = iter(cmap(a))
 
@@ -137,7 +138,7 @@ def u_to_top(u):
     pass
 
 def symmetrize(fn):
-    fn = '/Users/Tommy/Desktop/thesis/figures/out/all-nodepca.csv'
+    fn = '/Users/Tommy/Desktop/thesis/figures/out/all-dynnodepca.csv'
     do = pd.read_csv(fn)
     pa = do.groupby('residue ID')['PCA distance normalized to max'].mean()
     dd = pa.to_dict()
@@ -154,4 +155,4 @@ def symmetrize(fn):
     print(dd[179])
     print(dd[182])
     
-    color_by_centrality(ddd,'all-nodepca-symmetric')
+    color_by_centrality(ddd,'all-dynnodepca-symmetric',normalize=False)

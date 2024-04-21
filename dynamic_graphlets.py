@@ -137,13 +137,20 @@ def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None,PCs=('PC1','PC2'),colorby=
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1) 
     # ax.set_xlabel('Principal Component 1', fontsize = 15)
-    ax.set_xlabel(PCs[0], fontsize = 15)
 
-    ax.set_ylabel(PCs[1], fontsize = 15)
+    
+    evr = pca.explained_variance_ratio_
+    xExp = evr[int(PCs[0][2:])]*100
+    yExp = evr[int(PCs[1][2:])]*100
+    ax.set_xlabel(f'{PCs[0]} ({xExp}% Variance)', fontsize = 15)
+    ax.set_ylabel(f'{PCs[1]} ({yExp}% Variance)', fontsize = 15)
     ax.set_title('PCA dynamic graphlet degree distribution', fontsize = 20)
 
     targets = sorted(finalDf[colorby].unique())
-    color = iter(cm.rainbow(np.linspace(0, 1, len(targets))))
+    if colorby == 'chol':
+        color = iter(['#18a5ff','#d41159'])
+    else:
+        color = iter(cm.rainbow(np.linspace(0, 1, len(targets))))
 
 
     # ax.scatter(finalDf['start']
@@ -158,10 +165,14 @@ def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None,PCs=('PC1','PC2'),colorby=
             
             ax.scatter(finalDf.loc[indicesToKeep, x]
                     , finalDf.loc[indicesToKeep, y],
-                    c=c)
+                    c=c,s=5)
             
-    ax.legend(targets)
-    ax.grid()
+    if colorby == 'chol':
+        ax.legend(['15 mol%','30 mol%'])
+    else:
+        ax.legend(targets)
+
+    ax.grid(False)
     ax.yaxis.set_major_locator(AutoLocator())
     ax.xaxis.set_major_locator(AutoLocator())
     
