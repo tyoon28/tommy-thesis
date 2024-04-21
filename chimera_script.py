@@ -138,7 +138,7 @@ def u_to_top(u):
     pass
 
 def symmetrize(fn):
-    fn = '/Users/Tommy/Desktop/thesis/figures/out/all-dynnodepca.csv'
+    fn = '/Users/Tommy/Desktop/thesis/figures/out/all-nodepca.csv'
     do = pd.read_csv(fn)
     pa = do.groupby('residue ID')['PCA distance normalized to max'].mean()
     dd = pa.to_dict()
@@ -155,4 +155,4 @@ def symmetrize(fn):
     print(dd[179])
     print(dd[182])
     
-    color_by_centrality(ddd,'all-dynnodepca-symmetric',normalize=False)
+    color_by_centrality(ddd,'all-nodepca',normalize=False)

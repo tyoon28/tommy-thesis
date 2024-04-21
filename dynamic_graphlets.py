@@ -140,8 +140,8 @@ def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None,PCs=('PC1','PC2'),colorby=
 
     
     evr = pca.explained_variance_ratio_
-    xExp = evr[int(PCs[0][2:])-1]*100
-    yExp = evr[int(PCs[1][2:])-1]*100
+    xExp = round(evr[int(PCs[0][2:])-1]*100,1)
+    yExp = round(evr[int(PCs[1][2:])-1]*100,1)
     ax.set_xlabel(f'{PCs[0]} ({xExp}% Variance)', fontsize = 15)
     ax.set_ylabel(f'{PCs[1]} ({yExp}% Variance)', fontsize = 15)
     ax.set_title('PCA dynamic graphlet degree distribution', fontsize = 20)
@@ -165,7 +165,7 @@ def plot_PCA_dyn_gdd(finalDf,pca,remote=False,fn=None,PCs=('PC1','PC2'),colorby=
             
             ax.scatter(finalDf.loc[indicesToKeep, x]
                     , finalDf.loc[indicesToKeep, y],
-                    c=c,s=5)
+                    c=c,s=8)
             
     if colorby == 'chol':
         ax.legend(['15 mol%','30 mol%'])

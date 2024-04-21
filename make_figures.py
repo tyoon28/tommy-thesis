@@ -86,9 +86,23 @@ def correlation(mid_all,read=False):
     print('starclus')
     p = (abs(corrcoef_xy) > 0.25)
     pp = np.where(p.any(axis=1))[0]
-    print(len(pp))
+    print(25,len(pp))
     plot = sns.clustermap(corrcoef_xy[pp,:][:,pp])
     plot.savefig("clustermap-30.png")
+
+    p = (abs(corrcoef_xy) > 0.5)
+    pp = np.where(p.any(axis=1))[0]
+    print(50,len(pp))
+    plot = sns.clustermap(corrcoef_xy[pp,:][:,pp])
+    plot.savefig("clustermap-30-0.5.png")
+
+
+    p = (abs(corrcoef_xy) > 0.75)
+    pp = np.where(p.any(axis=1))[0]
+    print(75,len(pp))
+    plot = sns.clustermap(corrcoef_xy[pp,:][:,pp])
+    plot.savefig("clustermap-30-0.75.png")
+
 
     # print('startplot')
     # plot = sns.heatmap(corrcoef_xy, annot=True)
