@@ -956,7 +956,7 @@ def node_PCA_windowed(r,output=False,to_csv=False):
     dd=d_s.to_dict()
 
     # df.loc[df[19] != 0, 'A']
-    if output: dd_to_csv(dd,f'{r}-nodepca',u)
+    if output: dd_to_csv(dd,f'{r}-nodepca_windowed',u)
     if to_csv:
         df.to_csv('nodepca_windowed_forR.csv')
     dd_to_csv(ps,f'{r}-nodeps',u)

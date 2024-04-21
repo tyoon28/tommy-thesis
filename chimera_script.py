@@ -7,6 +7,8 @@ import numpy as np
 from matplotlib.pyplot import cm
 from network_generation import *
 import csv
+from matplotlib.colors import LinearSegmentedColormap
+
 
 one_letter ={'VAL':'V', 'ILE':'I', 'LEU':'L', 'GLU':'E', 'GLN':'Q', \
 'ASP':'D', 'ASN':'N', 'HIS':'H', 'TRP':'W', 'PHE':'F', 'TYR':'Y',    \
@@ -57,7 +59,8 @@ def color_by_centrality(d,fn):
 
     a = np.array(list(d_sort.values()),dtype=np.longdouble)
     a = a/a.max()
-    color = iter(cm.Reds(a))
+    cmap = LinearSegmentedColormap.from_list("", ["darkgray","red"])
+    color = iter(cmap(a))
 
     with open(f'{fn}.cxc','w') as f:
         for i in d_sort:
@@ -67,6 +70,7 @@ def color_by_centrality(d,fn):
             print(f'color {s} rgba({round(c[0])},{round(c[1])},{round(c[2])},1)',file=f)
             
     return
+
 
 
 
@@ -133,7 +137,7 @@ def u_to_top(u):
     pass
 
 def symmetrize(fn):
-    fn = '/Users/Tommy/Desktop/thesis/figures/out/all-nodeG3.csv'
+    fn = '/Users/Tommy/Desktop/thesis/figures/out/all-nodepca.csv'
     do = pd.read_csv(fn)
     pa = do.groupby('residue ID')['PCA distance normalized to max'].mean()
     dd = pa.to_dict()
@@ -150,4 +154,4 @@ def symmetrize(fn):
     print(dd[179])
     print(dd[182])
     
-    color_by_centrality(ddd,'all-nodeG3-symmetric')
+    color_by_centrality(ddd,'all-nodepca-symmetric')
