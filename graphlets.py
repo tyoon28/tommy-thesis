@@ -120,19 +120,19 @@ def PCA_gdd(ldirs,to_csv = False):
         dd.to_csv('gdd_all_reduced_forR.csv')
 
 
-    return df,finalDf,pca
+    return df,finalDf,pca,nPCs
 
 
-def plot_PCA_gdd(finalDf,out,column = 'chol',evr=None):
+def plot_PCA_gdd(finalDf,out,column = 'chol',evr=None,pcpair = ['PC1','PC2']):
     # PLOTTING PCA. only for 15 and 30
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1) 
     # ax.set_xlabel('Principal Component 1', fontsize = 15)
     if evr is not None:
-        xExp = round(evr[0]*100,1)
-        yExp = round(evr[1]*100,1)
-        ax.set_xlabel(f'PC 1 ({xExp}% Variance)', fontsize = 15)
-        ax.set_ylabel(f'PC 2 ({yExp}% Variance)', fontsize = 15)
+        xExp = round(evr[int(pcpair[0][:2:])]*100,1)
+        yExp = round(evr[int(pcpair[1][:2:])]*100,1)
+        ax.set_xlabel(f'{pcpair[0]} ({xExp}% Variance)', fontsize = 15)
+        ax.set_ylabel(f'{pcpair[1]} ({yExp}% Variance)', fontsize = 15)
 
     else:
         ax.set_xlabel('PC 1', fontsize = 15)
@@ -152,8 +152,8 @@ def plot_PCA_gdd(finalDf,out,column = 'chol',evr=None):
         indicesToKeep = finalDf[column] == target
         if len(indicesToKeep) > 10:
             c = next(color)
-            ax.scatter(finalDf.loc[indicesToKeep, 'PC1']
-                    , finalDf.loc[indicesToKeep, 'PC2'],
+            ax.scatter(finalDf.loc[indicesToKeep, pcpair[0]]
+                    , finalDf.loc[indicesToKeep, pcpair[1]],
                     color=c,s=5)
             
     if column == 'chol':
@@ -165,8 +165,7 @@ def plot_PCA_gdd(finalDf,out,column = 'chol',evr=None):
     ax.xaxis.set_major_locator(AutoLocator())
     plt.savefig(f'{out}.png')
 
-def PCA_logistic_selection(finalDf,pca,nPCs):
-    #TODO: do this including all replicates. maybe do it with just graphlets instead of PCs.
+def find_PCpair(finalDf,pca,nPCs,output_fig=False):
     X = finalDf[[f'PC{x}' for x in range(1,nPCs+1)]]
     y = finalDf['chol']
     X_train, X_test, y_train, y_test = train_test_split(X,y , 
@@ -179,15 +178,15 @@ def PCA_logistic_selection(finalDf,pca,nPCs):
 
     model = LogisticRegression(solver='liblinear', random_state=0)
     model.fit(X_train, y_train)
-    model.coef_
-    y_pred = model.predict(X_test)
-    print('Accuracy of logistic regression classifier on test set: {:.2f}'.format(model.score(X_test, y_test)))
     coefficients = model.coef_[0]
-
+    
     feature_importance = pd.DataFrame({'Feature': X.columns, 'Importance': np.abs(coefficients)})
     feature_importance = feature_importance.sort_values('Importance', ascending=True)
-    feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
-    plt.show()
+    if output_fig:
+        feature_importance.plot(x='Feature', y='Importance', kind='barh', figsize=(10, 6))
+        plt.savefig(f'varimportance.png')
+        plt.clf()
+    return (feature_importance['Feature'].iloc[-1],feature_importance['Feature'].iloc[-2])
 
 
 

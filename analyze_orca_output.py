@@ -36,13 +36,14 @@ def main():
     #     print(f'done with {r}')
 
     # print('running combined')
-    # r = 'all'
-    # ldirs = [f'../orca/output/{r}-{c}-closed' for r in ['R1','R2','R3'] for c in ['15','30']]
+    r = 'all'
+    ldirs = [f'../orca/output/{r}-{c}-closed' for r in ['R1','R2','R3'] for c in ['15','30']]
     # replicate_investigation(ldirs)
 
-    # df, finalDf,pca = PCA_gdd(ldirs,to_csv=True)
-    # print(f'making PCA plots for all')
-    # plot_PCA_gdd(finalDf,f'all_PCA_gdd')
+    df, finalDf,pca,nPCs = PCA_gdd(ldirs,to_csv=True)
+    pcpair = find_PCpair(finalDf,pca,nPCs)
+    print(f'making PCA plots for all')
+    plot_PCA_gdd(finalDf,f'all_PCA_gdd',evr = pca.explained_variance_ratio_,pcpair = pcpair)
 
     # print(f'calculating variable importance for all')
     # logistic_selection(df,r)
