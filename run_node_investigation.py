@@ -73,8 +73,8 @@ def main():
             d = pickle.load(f)
 
  
-
-        
+    print('done')
+    return
     d_difference = {}
     for res in residues:
         d_difference[res] = {}
