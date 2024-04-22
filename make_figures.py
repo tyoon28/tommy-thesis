@@ -7,18 +7,19 @@ import time
 def main():
     # inefficient to do all of these in series but who cares.
     # print('calculating persistence in RIN')
-    mid_all = persistance()
+    # mid_all = persistance()
     # np.save('mid_all.npy', mid_all)    # .npy extension is added if not given
 
     mid_all = np.load('mid_all.npy')
+    print(f'mid_all len: {np.count_nonzero(mid_all)}')
     # print('calculating correlations between contacts')
     correlation(mid_all,read=True)
 
     # print('calculating cholesterol contact landscape')
     # chol_contact()
 
-    print('calculating cholesterol contact landscape - binding sites')
-    chol_interactionlength(out=True)
+    # print('calculating cholesterol contact landscape - binding sites')
+    # chol_interactionlength(out=True)
 
     # print('calculating centralities')
     # centralities()
