@@ -58,17 +58,20 @@ def main():
         print('making d')
         conditions = [(i,r) for i in ['30','15'] for r in ['R1','R2','R3']]
 
-        with mp.Manager() as manager:
-            lock = manager.Lock()
-            d = manager.dict()
-            frink = partial(func, d, lock)
+        manager = mp.Manager()
+        lock = manager.Lock()
+        d = manager.dict()
+        frink = partial(func, d, lock)
 
-            d['15'] = {res:{} for res in residues}
-            d['30'] = {res:{} for res in residues}
-        
-            with manager.Pool(4) as pool:
-                s = pool.map(frink,conditions)
-            d = dict(d)
+        d['15'] = {res:{} for res in residues}
+        d['30'] = {res:{} for res in residues}
+    
+        with manager.Pool(4) as pool:
+            s = pool.map(frink,conditions)
+        d = dict(d)
+        pool.close()
+        pool.join()
+
 
         with open('node_invest.pickle', 'ab') as f:     
             pickle.dump(d, f)
