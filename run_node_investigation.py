@@ -71,7 +71,7 @@ def main():
             d = pickle.load(f)
 
     print(d)
-    break
+    return
     d_difference = {}
     for res in residues:
         d_difference[res] = {}
