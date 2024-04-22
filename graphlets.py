@@ -967,9 +967,8 @@ def node_PCA_windowed(r,output=False,to_csv=False):
         dic = {}
         for n in range(1,1349):
             d = df.loc[df['node'] == n]
-            dic[n] = (np.mean(d[o].loc[df['chol'] == 15]) - np.mean(d[o].loc[df['chol'] == 30]))/ \
-            ((np.std((d[o].loc[df['chol'] == 15]).to_numpy().flatten()) +  \
-              np.std((d[o].loc[df['chol'] == 30]).to_numpy().flatten()))/2)
+            dic[n] = abs((np.mean(d[o].loc[df['chol'] == 15]) - np.mean(d[o].loc[df['chol'] == 30])) / \
+            (np.mean(d[o].loc[df['chol'] == 15]) + np.mean(d[o].loc[df['chol'] == 30])))
             # dic[n] = np.mean(d[o])
         dd_to_csv(dic,f'{r}-node{g}',u)
         color_by_centrality(dic,f'{r}-node{g}')

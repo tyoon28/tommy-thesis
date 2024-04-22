@@ -155,4 +155,4 @@ def symmetrize(fn):
     print(dd[179])
     print(dd[182])
     
-    color_by_centrality(ddd,'all-nodeG10-symmetric',normalize=False)
+    color_by_centrality(ddd,'all-nodeG10-diff-symmetric',normalize=False)
