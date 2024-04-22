@@ -9,8 +9,6 @@ def func(package):
     resnames = ['V','L','G','A','A']
 
     i,r = package[1]
-    if i not in d:
-        d[i] = {}
 
     print(f'doing {r} {i}')
     xtcs = []
@@ -60,6 +58,8 @@ def main():
         conditions = [(i,r) for i in ['30','15'] for r in ['R1','R2','R3']]
         with mp.Manager() as manager:
             d = manager.dict()
+            d['15'] = {}
+            d['30'] = {}
             with manager.Pool(4) as pool:
                 tqdm.tqdm(pool.imap(func, zip(repeat(d,len(conditions)),conditions)),total = len(conditions))
             d = dict(d)
