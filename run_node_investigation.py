@@ -6,6 +6,8 @@ from functools import partial
 
 
 def func(d,lock,cond):
+    d['15']+=1
+    return
     residues = [265,264,178,179,182] # DON"T RUN WITHOUT SETTING RESIDEUSE
     resnames = ['V','L','G','A','A']
 
@@ -71,6 +73,7 @@ def main():
         d = dict(d)
         pool.close()
         pool.join()
+        print(d)
 
 
         with open('node_invest.pickle', 'ab') as f:     
