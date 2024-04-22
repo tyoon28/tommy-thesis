@@ -11,7 +11,6 @@ def func(package):
     i,r = package[1]
 
     print(f'doing {r} {i}')
-    print(d)
     xtcs = []
     for file in os.listdir(f'{r}-{i}-closed'):
         if file.endswith('.xtc'):
@@ -25,7 +24,7 @@ def func(package):
         print(f'{r} {i} chol',u.select_atoms(f'resid {resi[0]}').residues[0],'...')
         # record frequency of each unique set of contacts
 
-        for ts in u.trajectory:
+        for ts in u.trajectory[20:]:
             frame = u.trajectory.frame
             r_compound = protein.atoms.center_of_mass(compound='residues')
             mat = distances.contact_matrix(r_compound, cutoff=6)
@@ -71,8 +70,8 @@ def main():
         with open('node_invest.pickle', 'rb') as f:
             d = pickle.load(f)
 
- 
-    return
+    print(d)
+    break
     d_difference = {}
     for res in residues:
         d_difference[res] = {}
