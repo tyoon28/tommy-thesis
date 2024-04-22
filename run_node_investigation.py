@@ -53,6 +53,7 @@ def main():
 
     print('starting')
     if not runun:
+        print('making d')
         conditions = [(i,r) for i in ['30','15'] for r in ['R1','R2','R3']]
         with mp.Manager() as manager:
             d = manager.dict()
