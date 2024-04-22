@@ -5,9 +5,7 @@ from functools import partial
 
 
 
-def func(d,lock,cond):
-    d['15']+=1
-    return
+def func(d,cond):
     residues = [265,264,178,179,182] # DON"T RUN WITHOUT SETTING RESIDEUSE
     resnames = ['V','L','G','A','A']
 
@@ -35,11 +33,10 @@ def func(d,lock,cond):
             # +/- 1 from resid for proper indexing
             for inc in range(4):
                 fs = frozenset(np.nonzero(mat[resi-1][inc])[0])
-                with lock:
-                    if fs in d[i][res].keys():
-                        d[i][res][fs] += 1 
-                    else: d[i][res][fs] = 1 
-    return
+                if fs in d[i][res].keys():
+                    d[i][res][fs] += 1 
+                else: d[i][res][fs] = 1 
+    return d
 
 
 def resid_to_md_subunits(r):
@@ -59,22 +56,12 @@ def main():
     if not runun:
         print('making d')
         conditions = [(i,r) for i in ['30','15'] for r in ['R1','R2','R3']]
+        d = {}
+        d['15'] = {res:{} for res in residues}
+        d['30'] = {res:{} for res in residues}
 
-        manager = mp.Manager()
-        lock = manager.Lock()
-        d = manager.dict()
-        frink = partial(func, d, lock)
-        d['15'] = 0
-        # d['15'] = {res:{} for res in residues}
-        # d['30'] = {res:{} for res in residues}
-    
-        with manager.Pool(4) as pool:
-            s = pool.map(frink,conditions)
-        d = dict(d)
-        pool.close()
-        pool.join()
-        print(d)
-
+        for c in conditions:
+            d = func(d,c)
 
         with open('node_invest.pickle', 'ab') as f:     
             pickle.dump(d, f)
