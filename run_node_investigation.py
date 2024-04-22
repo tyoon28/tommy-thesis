@@ -63,7 +63,7 @@ def main():
                 d['15'][res] = {}
                 d['30'][res] = {}
             with manager.Pool(4) as pool:
-                tqdm.tqdm(pool.imap(func, zip(repeat(d,len(conditions)),conditions)),total = len(conditions))
+                s = tqdm.tqdm(pool.imap(func, zip(repeat(d,len(conditions)),conditions)),total = len(conditions))
             d = dict(d)
 
         with open('node_invest.pickle', 'ab') as f:     
@@ -73,7 +73,6 @@ def main():
             d = pickle.load(f)
 
  
-    print('done')
     return
     d_difference = {}
     for res in residues:
