@@ -11,6 +11,7 @@ def func(package):
     i,r = package[1]
 
     print(f'doing {r} {i}')
+    print(d)
     xtcs = []
     for file in os.listdir(f'{r}-{i}-closed'):
         if file.endswith('.xtc'):
