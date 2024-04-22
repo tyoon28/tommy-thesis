@@ -25,7 +25,7 @@ def func(d,cond):
         print(f'{r} {i} chol',u.select_atoms(f'resid {resi[0]}').residues[0],'...')
         # record frequency of each unique set of contacts
 
-        for ts in u.trajectory[:20]:
+        for ts in tqdm.tqdm(u.trajectory[:20]):
             frame = u.trajectory.frame
             r_compound = protein.atoms.center_of_mass(compound='residues')
             mat = distances.contact_matrix(r_compound, cutoff=6)
