@@ -23,8 +23,6 @@ def func(package):
         resi = resid_to_md_subunits(res)
         print(u.select_atoms(f'resid {resi[0]}').residues[0])
         # record frequency of each unique set of contacts
-        if r == 'R1':
-            d[i][res] = {}
 
         for ts in u.trajectory:
             frame = u.trajectory.frame
@@ -60,6 +58,9 @@ def main():
             d = manager.dict()
             d['15'] = {}
             d['30'] = {}
+            for res in residues:
+                d['15'][res] = {}
+                d['30'][res] = {}
             with manager.Pool(4) as pool:
                 tqdm.tqdm(pool.imap(func, zip(repeat(d,len(conditions)),conditions)),total = len(conditions))
             d = dict(d)
