@@ -58,11 +58,9 @@ def main():
         conditions = [(i,r) for i in ['30','15'] for r in ['R1','R2','R3']]
         with mp.Manager() as manager:
             d = manager.dict()
-            d['15'] = {}
-            d['30'] = {}
-            for res in residues:
-                d['15'][res] = {}
-                d['30'][res] = {}
+            d['15'] = {res:{} for res in residues}
+            d['30'] = {res:{} for res in residues}
+        
             with manager.Pool(4) as pool:
                 s = pool.map(func, zip(repeat(d,len(conditions)),conditions))
             d = dict(d)
