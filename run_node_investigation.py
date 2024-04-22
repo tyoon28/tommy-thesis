@@ -21,7 +21,7 @@ def func(package):
     protein = u.select_atoms('not resname CHOL and not resname POPC')
     for res in (residues):
         resi = resid_to_md_subunits(res)
-        print(u.select_atoms(f'{r} {i} resid {resi[0]}').residues[0])
+        print(f'{r} {i} chol',u.select_atoms(f'resid {resi[0]}').residues[0],'...')
         # record frequency of each unique set of contacts
 
         for ts in u.trajectory:
