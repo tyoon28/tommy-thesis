@@ -21,7 +21,7 @@ def func(package):
     protein = u.select_atoms('not resname CHOL and not resname POPC')
     for res in (residues):
         resi = resid_to_md_subunits(res)
-        print(u.select_atoms(f'resid {resi[0]}').residues[0])
+        print(u.select_atoms(f'{r} {i} resid {resi[0]}').residues[0])
         # record frequency of each unique set of contacts
 
         for ts in u.trajectory:
@@ -63,7 +63,7 @@ def main():
                 d['15'][res] = {}
                 d['30'][res] = {}
             with manager.Pool(4) as pool:
-                s = tqdm.tqdm(pool.imap(func, zip(repeat(d,len(conditions)),conditions)),total = len(conditions))
+                s = pool.map(func, zip(repeat(d,len(conditions)),conditions))
             d = dict(d)
 
         with open('node_invest.pickle', 'ab') as f:     
