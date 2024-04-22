@@ -1,4 +1,50 @@
 from graphlets import *
+import multiprocessing as mp
+from itertools import repeat
+
+
+def func(package):
+    d = package[0]
+    residues = [265,264,178,179,182] # DON"T RUN WITHOUT SETTING RESIDEUSE
+    resnames = ['V','L','G','A','A']
+
+    i,r = package[1]
+    if i not in d:
+        d[i] = {}
+
+    print(f'doing {r} {i}')
+    xtcs = []
+    for file in os.listdir(f'{r}-{i}-closed'):
+        if file.endswith('.xtc'):
+            xtcs.append(f'{r}-{i}-closed/'+file)
+    xtcs.sort(key=lambda x: int(x.split('-')[1]))
+    u = mda.Universe(f'{r}-{i}-closed/{r}-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
+
+    protein = u.select_atoms('not resname CHOL and not resname POPC')
+    for res in (residues):
+        resi = resid_to_md_subunits(res)
+        print(u.select_atoms(f'resid {resi[0]}').residues[0])
+        # record frequency of each unique set of contacts
+        if r == 'R1':
+            d[i][res] = {}
+
+        for ts in u.trajectory:
+            frame = u.trajectory.frame
+            r_compound = protein.atoms.center_of_mass(compound='residues')
+            mat = distances.contact_matrix(r_compound, cutoff=6)
+            np.fill_diagonal(mat, 0) 
+            # +/- 1 from resid for proper indexing
+            for inc in range(4):
+                fs = frozenset(np.nonzero(mat[resi-1][inc])[0])
+                if fs in d[i][res].keys():
+                    d[i][res][fs] += 1 
+                else: d[i][res][fs] = 1 
+    return
+
+
+def resid_to_md_subunits(r):
+    return np.array([(i * 337) + (r - 35) for i in range(0,4)])
+
 
 def main():
     runun = False
@@ -7,42 +53,21 @@ def main():
     residues = [265,264,178,179,182] # DON"T RUN WITHOUT SETTING RESIDEUSE
     resnames = ['V','L','G','A','A']
 
+
+
     print('starting')
     if not runun:
-        for i in ['30','15']:
-            d[i] = {}
-            for r in ['R1','R2','R3']:
-                print(f'doing {r} {i}')
-                xtcs = []
-                for file in os.listdir(f'{r}-{i}-closed'):
-                    if file.endswith('.xtc'):
-                        xtcs.append(f'{r}-{i}-closed/'+file)
-                xtcs.sort(key=lambda x: int(x.split('-')[1]))
-                u = mda.Universe(f'{r}-{i}-closed/{r}-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
+        conditions = [(i,r) for i in ['30','15'] for r in ['R1','R2','R3']]
+        with mp.Manager() as manager:
+            d = manager.dict()
+            with manager.Pool(4) as pool:
+                tqdm.tqdm(pool.imap(func, zip(repeat(d,len(conditions)),conditions)),total = len(conditions))
+            d = dict(d)
 
-                protein = u.select_atoms('not resname CHOL and not resname POPC')
-                for res in tqdm.tqdm(residues):
-                    resi = resid_to_md_subunits(res)
-                    print(u.select_atoms(f'resid {resi[0]}').residues[0])
-                    # record frequency of each unique set of contacts
-                    if r == 'R1':
-                        d[i][res] = {}
-
-                    for ts in u.trajectory:
-                        frame = u.trajectory.frame
-                        r_compound = protein.atoms.center_of_mass(compound='residues')
-                        mat = distances.contact_matrix(r_compound, cutoff=6)
-                        np.fill_diagonal(mat, 0) 
-                        # +/- 1 from resid for proper indexing
-                        nz = np.nonzero(mat[resi-1])[0] + 1
-                        fs = frozenset(nz)
-                        if fs in d[i][res].keys():
-                            d[i][res][fs] += 1 
-                        else: d[i][res][fs] = 1 
         with open('node_invest.pickle', 'ab') as f:     
-            pickle.dump(d, f)        
+            pickle.dump(d, f)
     else:
-        with open('examplePickle', 'rb') as f:
+        with open('node_invest.pickle', 'rb') as f:
             d = pickle.load(f)
 
  
@@ -80,9 +105,9 @@ def main():
     # plt2 = fig.add_subplot(1,3,2)
     # plt3 = fig.add_subplot(1,3,3)
     # cbar = fig.add_subplot(2,3,4,figsize=(6.4, 0.35))
-    x = list(range(len(d_difference[res])))
-    y = sorted(d_difference[res].values(),reverse=True)
-    plt.plot(x,y)
+    # x = list(range(len(d_difference[res])))
+    # y = sorted(d_difference[res].values(),reverse=True)
+    # plt.plot(x,y)
 
     for p in [1,2,3,4,5,6]:
         res = residues[p-1]
@@ -127,11 +152,6 @@ def main():
 
     plt.savefig('hgraphs.png')
     print('done')
-
-
-def resid_to_md_subunits(r):
-    return np.array([(i * 337) + (r - 35) for i in range(0,4)])
-
 
 if __name__ == "__main__":
     warnings.filterwarnings('ignore')

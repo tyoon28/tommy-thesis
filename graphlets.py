@@ -961,13 +961,15 @@ def node_PCA_windowed(r,output=False,to_csv=False):
         df.to_csv('nodepca_windowed_forR.csv')
     dd_to_csv(ps,f'{r}-nodeps',u)
 
-    for g,o in [('G10',[21,20,18,19]),('G9',[17,16,15]),('G3',[4,5])]:
+    for g,o in [('G10',[21,20,18,19]),('G9',[17,16,15]),('G1',[1,2])]:
 
         print(f'looking for {g}')
         dic = {}
         for n in range(1,1349):
             d = df.loc[df['node'] == n]
-            dic[n] = np.mean(d[o].loc[df['chol'] == 15]) - np.mean(d[o].loc[df['chol'] == 30])/((np.std(d[o].loc[df['chol'] == 15]) + np.std(d[o].loc[df['chol'] == 30]))/2)
+            dic[n] = (np.mean(d[o].loc[df['chol'] == 15]) - np.mean(d[o].loc[df['chol'] == 30]))/ \
+            ((np.std((d[o].loc[df['chol'] == 15]).to_numpy().flatten()) +  \
+              np.std((d[o].loc[df['chol'] == 30]).to_numpy().flatten()))/2)
             # dic[n] = np.mean(d[o])
         dd_to_csv(dic,f'{r}-node{g}',u)
         color_by_centrality(dic,f'{r}-node{g}')
