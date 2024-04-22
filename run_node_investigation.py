@@ -1,14 +1,15 @@
 from graphlets import *
 import multiprocessing as mp
 from itertools import repeat
+from functools import partial
 
 
-def func(package):
-    d = package[0]
+
+def func(d,lock,cond):
     residues = [265,264,178,179,182] # DON"T RUN WITHOUT SETTING RESIDEUSE
     resnames = ['V','L','G','A','A']
 
-    i,r = package[1]
+    i,r = cond
 
     print(f'doing {r} {i}')
     xtcs = []
@@ -32,9 +33,10 @@ def func(package):
             # +/- 1 from resid for proper indexing
             for inc in range(4):
                 fs = frozenset(np.nonzero(mat[resi-1][inc])[0])
-                if fs in d[i][res].keys():
-                    d[i][res][fs] += 1 
-                else: d[i][res][fs] = 1 
+                with lock:
+                    if fs in d[i][res].keys():
+                        d[i][res][fs] += 1 
+                    else: d[i][res][fs] = 1 
     return
 
 
@@ -55,13 +57,17 @@ def main():
     if not runun:
         print('making d')
         conditions = [(i,r) for i in ['30','15'] for r in ['R1','R2','R3']]
+
         with mp.Manager() as manager:
+            lock = manager.Lock()
             d = manager.dict()
+            frink = partial(func, d, lock)
+
             d['15'] = {res:{} for res in residues}
             d['30'] = {res:{} for res in residues}
         
             with manager.Pool(4) as pool:
-                s = pool.map(func, zip(repeat(d,len(conditions)),conditions))
+                s = pool.map(frink,conditions)
             d = dict(d)
 
         with open('node_invest.pickle', 'ab') as f:     
