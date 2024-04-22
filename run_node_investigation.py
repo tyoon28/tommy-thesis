@@ -64,9 +64,9 @@ def main():
         lock = manager.Lock()
         d = manager.dict()
         frink = partial(func, d, lock)
-
-        d['15'] = {res:{} for res in residues}
-        d['30'] = {res:{} for res in residues}
+        d['15'] = 0
+        # d['15'] = {res:{} for res in residues}
+        # d['30'] = {res:{} for res in residues}
     
         with manager.Pool(4) as pool:
             s = pool.map(frink,conditions)
