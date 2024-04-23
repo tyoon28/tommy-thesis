@@ -7,6 +7,7 @@ import os
 
 u = mda.Universe('R1-30-closed/R1-0-start-membrane-3JYC.pdb','R1-30-closed/R1-0-1000-3JYC.xtc')
 
+#WRONG 
 with open('30bonds.txt','w') as f:
     for i,atom in enumerate(u.atoms):
         if i != len(u.atoms)-1:
