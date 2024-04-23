@@ -6,7 +6,7 @@ def resid_to_md_subunits(r):
     return np.array([(i * 337) + (r - 35) for i in range(0,4)])
 
 
-def main(residues):
+def main():
     # calculate contact probabilities between residues, identify contacts between subunits
     # make sure to record ones in subunit 1.
     residues = [75,175,176,177,178,179,180,181,182,183]
