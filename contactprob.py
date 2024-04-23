@@ -17,7 +17,7 @@ def main():
         selstring += ' or resid '
     selstring = selstring[:-10]
     
-    storemat15 = np.zeros((len(residues)*4,len(residues)*4))
+    storemat = np.zeros((len(residues)*4,len(residues)*4))
     dmat = np.zeros((len(residues)*4,len(residues)*4))
     for i in ['15','30']:
         for r in ['R1','R2','R3']:
