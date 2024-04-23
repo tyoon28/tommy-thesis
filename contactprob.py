@@ -17,9 +17,10 @@ def main():
         selstring += ' or resid '
     selstring = selstring[:-10]
     
-    storemat = np.zeros((len(residues)*4,len(residues)*4))
     dmat = np.zeros((len(residues)*4,len(residues)*4))
     for i in ['15','30']:
+        storemat = np.zeros((len(residues)*4,len(residues)*4))
+
         for r in ['R1','R2','R3']:
             xtcs = []
             for file in os.listdir(f'{r}-{i}-closed'):
