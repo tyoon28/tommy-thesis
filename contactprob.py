@@ -9,7 +9,9 @@ def resid_to_md_subunits(r):
 def main():
     # calculate contact probabilities between residues, identify contacts between subunits
     # make sure to record ones in subunit 1.
-    residues = [75,175,176,177,178,179,180,181,182,183]
+    rnames = ['V75','F175','M176','I177','G178','A179','I180','M181','A182','K183','M184','A185']
+
+    residues = [75,175,176,177,178,179,180,181,182,183,184,185]
     selstring = 'resid '
     for res in residues:
         a = resid_to_md_subunits(res)
@@ -42,11 +44,26 @@ def main():
             dmat = storemat - storemat15
 
     # dmat stores difference in contact prob between pairs of residues.
-    np.save('dmat.npy', dmat)
+    np.save('dmat2.npy', dmat)
 
 
-    ax = sns.heatmap(dmat, linewidth=0.5)
-    plt.savefig('dmat.png')
+    ax = sns.heatmap(dmat, linewidth=0.5,xticklabels=rnames*4, yticklabels=rnames*4)
+    plt.savefig('dmat2.png')
+
+    return
+    s = len(residues)
+    rnames = ['V75','F175','M176','I177','G178','A179','I180','M181','A182','K183','M184','A185']
+    dmat = np.load('dmat.npy')
+    a = np.zeros((10,10))
+
+    for row in range(len(a)):
+        ro = np.mean(dmat[[row,row+10,row+20,row+30]],axis=0)
+        for j in range(10):
+            a[row][j] = np.mean(ro[[j,j+10,j+20,j+30]])
+    ax = sns.heatmap(a, linewidth=0.5,xticklabels=rnames, yticklabels=rnames)
+    plt.savefig('a.png')
+
+
     return
 
 if __name__ == "__main__":
