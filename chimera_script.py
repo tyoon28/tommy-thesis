@@ -130,7 +130,7 @@ def MD_to_resid(s,u=None):
 
     
     
-    return res+str(e + 36)
+    return res+str(e + 35)
 
 
 
