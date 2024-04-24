@@ -10,13 +10,13 @@ def main():
     # mid_all = persistance()
     # np.save('mid_all.npy', mid_all)    # .npy extension is added if not given
 
-    mid_all = np.load('mid_all.npy')
-    print(f'mid_all len: {np.count_nonzero(mid_all)}')
+    # mid_all = np.load('mid_all.npy')
+    # print(f'mid_all len: {np.count_nonzero(mid_all)}')
     # print('calculating correlations between contacts')
-    correlation(mid_all,read=True)
+    # correlation(mid_all,read=True)
 
-    # print('calculating cholesterol contact landscape')
-    # chol_contact()
+    print('calculating cholesterol contact landscape')
+    chol_contact()
 
     # print('calculating cholesterol contact landscape - binding sites')
     # chol_interactionlength(out=True)
@@ -269,7 +269,7 @@ def chol_contact():
             xtcs.append('R1-15-closed/'+file)
     xtcs.sort(key=lambda x: int(x.split('-')[1]))
     u = mda.Universe('R1-15-closed/R1-0-start-membrane-3JYC.pdb',*xtcs,continuous= True)
-
+    skip = 8
     for c in ['15','30']:
         if c == '15': 
             color = 'cyan'
@@ -277,7 +277,7 @@ def chol_contact():
         else: 
             color = 'yellow'
             darkcolor = 'red'
-        avg = np.zeros(len(u.trajectory))
+        avg = np.zeros(int(len(u.trajectory)/skip))
         for r in ['R1','R2','R3']:
             xtcs = []
             for file in os.listdir(f'{r}-{c}-closed'):
@@ -291,13 +291,13 @@ def chol_contact():
 
             protein_sterols = protein + chol
 
-            t = np.zeros(len(u.trajectory))
-            y = np.zeros(len(u.trajectory))
-            y2=np.zeros(len(u.trajectory))
+            t = np.zeros(int(len(u.trajectory)/skip))
+            y = np.zeros(int(len(u.trajectory)/skip))
             # count cholesterols occupying
             # have lines in background, thick line for average of the replicates, and both conditions in same plot.
             for ts in tqdm.tqdm(u.trajectory[:]):
                 tim = u.trajectory.time
+                if tim%skip != 0: continue
                 t[u.trajectory.frame] = tim
 
 
@@ -311,12 +311,14 @@ def chol_contact():
                 y[u.trajectory.frame] = occupancy
 
             
-            plt.plot(t,y,color)
+            plt.plot(t,savgol_filter(y, 300, 2),color)
             avg += y
         avg = avg / 3
-        plt.plot(t,avg,darkcolor)
+        plt.plot(t,savgol_filter(avg, 300, 2),color)
         print(f'{c} mol%: average {np.mean(avg)}')
-    plt.savefig('figure_cholcontact.png', dpi=300, bbox_inches='tight')
+
+
+    plt.savefig('figure_cholcontact2.png', dpi=300, bbox_inches='tight')
 
 
 def chol_interactionlength(out = False):
