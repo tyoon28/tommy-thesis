@@ -62,55 +62,55 @@ def main():
             a[row][j] = np.mean(ro[[j,j+shif,j+(2*shif),j+(3*shif)]])
     ax = sns.heatmap(a, linewidth=0.5,xticklabels=rnames, yticklabels=rnames)
     plt.savefig('a3.png')
-    return
 
 
-    # contactpairs = [(181,177),(181,182),(181,181),(181,75),(184,75),(177,177)]
-    # selstring = 'resid '
-    # residues = 181,177,182,75,184
-    # for res in residues:
-    #     a = resid_to_md_subunits(res)
-    #     selstring += ' or resid '.join(list(map(str,a)))
-    #     selstring += ' or resid '
-    # selstring = selstring[:-10]
 
-    # contactpairs = [(2,1),(2,3),(2,2),(2,0),(4,0),(1,1)]
+    contactpairs = [(181,177),(181,182),(181,181),(181,75),(184,75),(177,177)]
+    selstring = 'resid '
+    residues = 181,177,182,75,184
+    for res in residues:
+        a = resid_to_md_subunits(res)
+        selstring += ' or resid '.join(list(map(str,a)))
+        selstring += ' or resid '
+    selstring = selstring[:-10]
 
-    # shif = 5
-    # for i in ['15','30']:
-    #     cond = np.zeros((len(contactpairs),100001))
-    #     for r in ['R1','R2','R3']:
-    #         xtcs = []
-    #         for file in os.listdir(f'{r}-{i}-closed'):
-    #             if file.endswith('.xtc'):
-    #                 xtcs.append(f'{r}-{i}-closed/'+file)
-    #         xtcs.sort(key=lambda x: int(x.split('-')[1]))
-    #         u = mda.Universe(f'{r}-{i}-closed/{r}-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
-    #         protein = u.select_atoms(selstring)
-    #         a = np.zeros((len(contactpairs),len(u.trajectory)))
-    #         for ts in tqdm.tqdm(u.trajectory):
-    #             frame = u.trajectory.frame
-    #             r_compound = protein.atoms.center_of_mass(compound='residues')
-    #             mat = distances.contact_matrix(r_compound, cutoff=6)
-    #             np.fill_diagonal(mat, 0) 
-    #             j = 0
-    #             for p1,p2 in contactpairs:
-    #                 resids1 = np.array([p1,p1+5,p1+10,p1+15])
-    #                 resids2 = np.array([p2,p2+5,p2+10,p2+15])
-    #                 k = np.count_nonzero(mat[resids1,:][:,resids2])
-    #                 a[j][frame] = k
-    #                 j+=1
-    #         a = a/2 # since matrix is symmetrical
-    #         cond += a
+    contactpairs = [(2,1),(2,3),(2,2),(2,0),(4,0),(1,1)]
+
+    shif = 5
+    for i in ['15','30']:
+        cond = np.zeros((len(contactpairs),100001))
+        for r in ['R1','R2','R3']:
+            xtcs = []
+            for file in os.listdir(f'{r}-{i}-closed'):
+                if file.endswith('.xtc'):
+                    xtcs.append(f'{r}-{i}-closed/'+file)
+            xtcs.sort(key=lambda x: int(x.split('-')[1]))
+            u = mda.Universe(f'{r}-{i}-closed/{r}-0-start-membrane-3JYC.pdb',*xtcs,continuous=True)
+            protein = u.select_atoms(selstring)
+            a = np.zeros((len(contactpairs),len(u.trajectory)))
+            for ts in tqdm.tqdm(u.trajectory):
+                frame = u.trajectory.frame
+                r_compound = protein.atoms.center_of_mass(compound='residues')
+                mat = distances.contact_matrix(r_compound, cutoff=6)
+                np.fill_diagonal(mat, 0) 
+                j = 0
+                for p1,p2 in contactpairs:
+                    resids1 = np.array([p1,p1+5,p1+10,p1+15])
+                    resids2 = np.array([p2,p2+5,p2+10,p2+15])
+                    k = np.count_nonzero(mat[resids1,:][:,resids2])
+                    a[j][frame] = k
+                    j+=1
+            a = a/2 # since matrix is symmetrical
+            cond += a
         
-    # t = list(range(100001))
-    # for k in a:
-    #     plt.plot(t,savgol_filter(k, 1000, 2))
-    # # plt.legend([('M181','I177'),('M181','A182'),('M181','M181'),('M181','V75'),('M184','V75'),('I177','I177')])
-    # plt.ylabel('# contacts (subunits)')
-    # plt.xlabel('time')
-    # plt.ylim(0,3.4)
-    # plt.show()
+    t = list(range(100001))
+    for k in a:
+        plt.plot(t,savgol_filter(k, 1000, 2))
+    # plt.legend([('M181','I177'),('M181','A182'),('M181','M181'),('M181','V75'),('M184','V75'),('I177','I177')])
+    plt.ylabel('# contacts (subunits)')
+    plt.xlabel('time')
+    plt.ylim(0,3.4)
+    plt.show()
 
     return
 
