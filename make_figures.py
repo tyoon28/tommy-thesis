@@ -293,8 +293,8 @@ def chol_contact():
 
             protein_sterols = protein + chol
 
-            t = np.zeros(int(len(u.trajectory)/skip))
-            y = np.zeros(int(len(u.trajectory)/skip))
+            t = []
+            y = []
             # count cholesterols occupying
             # have lines in background, thick line for average of the replicates, and both conditions in same plot.
             i = 0
@@ -315,7 +315,7 @@ def chol_contact():
 
             
             plt.plot(t,savgol_filter(y, 300, 2),color)
-            avg += y
+            avg += np.array(y)
         avg = avg / 3
         plt.plot(t,savgol_filter(avg, 300, 2),color)
         print(f'{c} mol%: average {np.mean(avg)}')
