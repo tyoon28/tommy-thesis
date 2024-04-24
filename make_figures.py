@@ -299,7 +299,7 @@ def chol_contact():
             # have lines in background, thick line for average of the replicates, and both conditions in same plot.
             i = 0
             for ts in tqdm.tqdm(u.trajectory[:]):
-                tim = u.trajectory.time
+                tim = u.trajectory.frame
                 if tim%skip != 0: continue
                 t.append(tim)
 
