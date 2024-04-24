@@ -33,8 +33,8 @@ def main():
                 poss = protein.positions
                 vectors = np.zeros((int(len(poss)/2),3))
                 
-                for i,p in enumerate(poss.reshape((int(len(poss)/2), 2,3))):
-                    vectors[i] = p[0] - p[1]
+                for j,p in enumerate(poss.reshape((int(len(poss)/2), 2,3))):
+                    vectors[j] = p[0] - p[1]
                 distmat = 1 - cdist(vectors, vectors, metric='cosine')
                 flattened = distmat[np.triu_indices_from(distmat, k=1)]
                 angle = np.mean(abs(flattened))
