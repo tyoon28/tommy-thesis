@@ -2,6 +2,8 @@ from graphlets import *
 from itertools import combinations
 import seaborn as sns
 import time
+from scipy.signal import savgol_filter
+
 
 
 def main():
@@ -295,10 +297,11 @@ def chol_contact():
             y = np.zeros(int(len(u.trajectory)/skip))
             # count cholesterols occupying
             # have lines in background, thick line for average of the replicates, and both conditions in same plot.
+            i = 0
             for ts in tqdm.tqdm(u.trajectory[:]):
                 tim = u.trajectory.time
                 if tim%skip != 0: continue
-                t[u.trajectory.frame] = tim
+                t.append(tim)
 
 
                 r = protein_sterols.atoms.center_of_mass(compound='residues')
@@ -308,7 +311,7 @@ def chol_contact():
                 z = contact_mat[:len(protein),len(protein):]
                 occupancy = np.sum(np.any(z,0))
                 occupancy2 = np.sum(np.any(z,1))
-                y[u.trajectory.frame] = occupancy
+                y.append(occupancy)
 
             
             plt.plot(t,savgol_filter(y, 300, 2),color)
