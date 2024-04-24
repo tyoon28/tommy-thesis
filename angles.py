@@ -31,10 +31,10 @@ def main():
             for ts in tqdm.tqdm(u.trajectory):
                 frame = u.trajectory.frame
                 poss = protein.positions
-                vectors = np.zeros((int(len(poss)/2),3))
+                vectors = np.zeros((int(len(poss)/2),2))
                 
                 for j,p in enumerate(poss.reshape((int(len(poss)/2), 2,3))):
-                    vectors[j] = p[0] - p[1]
+                    vectors[j] = (p[0] - p[1])[:2]
                 distmat = 1 - cdist(vectors, vectors, metric='cosine')
                 flattened = distmat[np.triu_indices_from(distmat, k=1)]
                 angle = np.mean(abs(flattened))
@@ -42,9 +42,23 @@ def main():
                 iters += 1
 
         if i == '15':
-            np.save('storeangles15.npy', np.copy(angles))
+            np.save('storeangles15_flat.npy', np.copy(angles))
         else:
-            np.save('storeangles30.npy', np.copy(angles))
+            np.save('storeangles30_flat.npy', np.copy(angles))
+
+    ####
+    # a15 = np.load('storeangles15_flat.npy')
+    # a30 = np.load('storeangles30_flat.npy')
+    # np.mean(a15)
+    # np.mean(a30)
+
+
+    # fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+    # ax.plot(theta, r)
+    # ax.set_rmax(2)
+    # ax.set_rticks([0.5, 1, 1.5, 2])  # Less radial ticks
+    # ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
+    # ax.grid(True)
 
 
 
