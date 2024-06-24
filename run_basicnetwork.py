@@ -1,3 +1,6 @@
+'''
+helper functions for calculating centralities
+'''
 from graphlets import *
 
 def main():

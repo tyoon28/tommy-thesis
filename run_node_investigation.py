@@ -1,3 +1,6 @@
+'''
+This analysis was a little bit too contrived to be useful, not included in thesis
+'''
 from graphlets import *
 import multiprocessing as mp
 from itertools import repeat

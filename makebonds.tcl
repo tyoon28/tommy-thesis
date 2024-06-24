@@ -1,3 +1,6 @@
+# for drawing the protein in VMD. 
+# in VMD console, after opening the structure/trajectory, type "source <path to makebonds.tcl>", 
+# then "drawbonds <15bonds.txt or 30bonds.txt", depending on which condition>
 proc drawbonds { fi } {
   set fp [open $fi r]
   set file_data [read $fp]

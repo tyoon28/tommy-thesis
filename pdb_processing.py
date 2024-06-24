@@ -1,5 +1,5 @@
 '''
-add chain IDs to .pdb files. each molecule has its own chain. does not work and is useless.
+add chain IDs to .pdb files. each molecule has its own chain. This does not work and is useless.
 '''
 
 import pandas as pd

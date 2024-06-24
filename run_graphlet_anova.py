@@ -1,5 +1,7 @@
-# not an ANOVA anymore really.
-# fit a logistic model to each node and print out p values
+'''not an ANOVA anymore really.
+fit a logistic model to each node and print out p values
+Unused in final thesis
+'''
 from graphlets import *
 import warnings
 from scipy.stats import f_oneway

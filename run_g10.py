@@ -1,3 +1,4 @@
+'''Unused testing'''
 from graphlets import *
 
 def main():
@@ -20,6 +21,7 @@ def main():
                 deg = G.degree()
                 for n in G.nodes:
                     if deg[n] == 3:
+                        pass
 
 
 

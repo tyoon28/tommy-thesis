@@ -1,3 +1,6 @@
+'''
+Script outputs figure 6 and 7
+'''
 from graphlets import *
 from itertools import combinations
 import seaborn as sns

@@ -1,3 +1,6 @@
+'''
+for select residues (rnames) calculate how likely they are to be in contact. This is figure 10B.
+'''
 from graphlets import *
 import seaborn as sns
 

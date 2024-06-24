@@ -1,3 +1,6 @@
+'''
+process MD simulation data into output for orca
+'''
 from graphlets import *
 import warnings
 

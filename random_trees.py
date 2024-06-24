@@ -1,3 +1,8 @@
+'''
+testing hypergraphs vs pairwise graphs using random forest. 
+Which graph model is better at characterizing the 15 vs 30 condition?
+Unused in final thesis
+'''
 from hypergraphs import *
 from network_statistics import *
 import pandas as pd

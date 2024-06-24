@@ -1,3 +1,6 @@
+'''
+helper functions for making temporal graphs, analyzing dynamic graphlets
+'''
 from network_statistics import *
 from network_generation import *
 import pandas as pd

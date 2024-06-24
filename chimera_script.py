@@ -1,7 +1,9 @@
 '''
 Makes a chimera script to color and show surfaces of all lipids/sterols.
-Requires the .pdb file, but will be changed later to not need it
+Open a .cxc file while the pdb structure is open in chimeraX to run the script.
+Also contains a bunch of helper functions having to do with naming residues and creating graphics
 '''
+
 import pandas as pd
 import numpy as np
 from matplotlib.pyplot import cm
@@ -55,6 +57,9 @@ one_letter ={'VAL':'V', 'ILE':'I', 'LEU':'L', 'GLU':'E', 'GLN':'Q', \
 
 
 def color_by_centrality(d,fn,normalize=True):
+    # outputs .cxc file to color residues in chimeraX based on some value for each residue (in dictionary d)
+    # i.e. high value is red and low is gray
+    # fn: output filename (base)
     d_sort = dict(sorted(d.items(), key=lambda x: x[1]))
     a = np.array(list(d_sort.values()),dtype=np.longdouble)
 
@@ -76,6 +81,8 @@ def color_by_centrality(d,fn,normalize=True):
 
 
 def dd_to_csv(d,fn,u):
+    # dictionary of a metric for each residue to csv file containing info about each residue
+    # writes as PCA distance because that's what I used it for, but then adapted to use any metric
     d_sort = dict(sorted(d.items(), key=lambda x: x[1]))
 
     a = np.array(list(d_sort.values()),dtype=np.longdouble)
@@ -101,6 +108,8 @@ def dd_to_csv(d,fn,u):
 
 
 def MD_to_chimerax(s):
+    # translate residue ID from MDanalysis package (1-indexed, contiguous) 
+    # to chimeraX (starts at 36, repeats every 337 residues)
     if s%337 == 0:
         e = 337
     else: e = s%337
@@ -115,6 +124,7 @@ def MD_to_chimerax(s):
 
 
 def MD_to_resid(s,u=None):
+    # translate MDanalysis residue ID to common convention (e.g. M88)
     one_letter ={'VAL':'V', 'ILE':'I', 'LEU':'L', 'GLU':'E', 'GLN':'Q', \
     'ASP':'D', 'ASN':'N', 'HIS':'H', 'TRP':'W', 'PHE':'F', 'TYR':'Y',    \
     'ARG':'R', 'LYS':'K', 'SER':'S', 'THR':'T', 'MET':'M', 'ALA':'A',    \
@@ -134,10 +144,9 @@ def MD_to_resid(s,u=None):
 
 
 
-def u_to_top(u):
-    pass
 
 def symmetrize(fn):
+    # given metric for all residues (as csv file) average across subunits and output cxc file to visualize
     fn = '/Users/Tommy/Desktop/thesis/figures/out/all-nodeG10.csv'
     do = pd.read_csv(fn)
     pa = do.groupby('residue ID')['PCA distance normalized to max'].mean()

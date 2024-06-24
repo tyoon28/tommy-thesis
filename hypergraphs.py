@@ -1,3 +1,6 @@
+'''
+Testing hypergraphs
+'''
 from graph_tool.all import *
 import graph_tool as gt
 import sys

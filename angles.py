@@ -1,9 +1,12 @@
+'''
+This script calculates average pairwise absolute cosine distance for all 8 I177 and M181 in protein.
+A simple way to visualize how aligned these residues are.
+'''
 from graphlets import *
 import seaborn as sns
 from scipy.spatial.distance import cdist
 
 
-# calculate average pairwise absolute cosine distance for all 8 I177 and M181 in protein.
 
 def resid_to_md_subunits(r):
     return np.array([(i * 337) + (r - 35) for i in range(0,4)])

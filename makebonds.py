@@ -1,3 +1,6 @@
+'''
+Unused test for visualization
+'''
 from network_generation import *
 from network_statistics import *
 import os

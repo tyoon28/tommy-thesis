@@ -1,3 +1,4 @@
+'''make inputs for dynamic graphlet counting'''
 from dynamic_graphlets import *
 
 def main():

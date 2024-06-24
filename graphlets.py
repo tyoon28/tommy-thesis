@@ -1,3 +1,6 @@
+'''
+helper functions for making graphs from MD simulation and analyzing graphlets
+'''
 from network_statistics import *
 import random
 import pandas as pd

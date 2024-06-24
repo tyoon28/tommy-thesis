@@ -1,3 +1,4 @@
+'''run dynamic graphlet analysis. This is for after running a program to count dynamic graphlets.'''
 from dynamic_graphlets import *
 from hotelling.stats import hotelling_t2
 
@@ -233,6 +234,7 @@ def main():
 
 def R12vs3():
     #compare node orbits in R1 and R2 vs R3
+    # this never worked, don't use it
     print('comparing node orbits in R1 and R2 vs R3')
     nfeatures = 3728 # length of vector
     plt.clf()
